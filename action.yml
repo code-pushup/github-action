@@ -1,11 +1,10 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: Code PushUp
+description: Quality metrics from Code PushUp
+author: code-pushup
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: 'heart'
-  color: 'red'
+  icon: activity
+  color: blue
 
 # Define your inputs here.
 inputs:
