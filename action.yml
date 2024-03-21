@@ -1,22 +1,29 @@
 name: Code PushUp
 description: Quality metrics from Code PushUp
-author: code-pushup
 
 branding:
   icon: activity
   color: blue
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  bin:
+    description: Custom code-pushup executable
     required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: 'Your output description here'
+    default: npx code-pushup
+  config:
+    description: Custom code-pushup.config path
+    required: false
+  directory:
+    description: Custom working directory
+    required: false
+  silent:
+    description: Silence logs from Code Pushup CLI
+    required: true
+    default: false
+  token:
+    description: GITHUB_TOKEN or a repo scoped PAT.
+    required: true
+    default: ${{ github.token }}
 
 runs:
   using: node20
