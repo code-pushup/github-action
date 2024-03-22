@@ -10,7 +10,7 @@ import {
   writeFile
 } from 'node:fs/promises'
 import { join } from 'node:path'
-import simpleGit, { type SimpleGit } from 'simple-git'
+import { simpleGit, type SimpleGit } from 'simple-git'
 import type { ActionInputs } from '../src/inputs'
 import { run } from '../src/main'
 
@@ -56,7 +56,7 @@ describe('code-pushup action', () => {
         }
       })
 
-    // @ts-expect-error
+    // @ts-expect-error context is readonly
     github.context = {
       payload: {}
     } as Context
@@ -91,7 +91,7 @@ describe('code-pushup action', () => {
 
   describe('push event', () => {
     beforeEach(async () => {
-      // @ts-expect-error
+      // @ts-expect-error context is readonly
       github.context = {
         payload: {}
       } as Context
@@ -132,7 +132,7 @@ describe('code-pushup action', () => {
 
   describe('pull request event', () => {
     beforeEach(async () => {
-      // @ts-expect-error
+      // @ts-expect-error context is readonly
       github.context = {
         payload: {
           pull_request: {

@@ -9,7 +9,7 @@ inputs:
   bin:
     description: Custom code-pushup executable
     required: true
-    default: npx code-pushup
+    default: npx --no-install code-pushup
   config:
     description: Custom code-pushup.config path
     required: false
@@ -21,9 +21,13 @@ inputs:
     required: true
     default: false
   token:
-    description: GITHUB_TOKEN or a repo scoped PAT.
+    description: GITHUB_TOKEN or a repo scoped PAT
     required: true
     default: ${{ github.token }}
+
+outputs:
+  comment-id:
+    description: ID of created or updated GitHub comment
 
 runs:
   using: node20
