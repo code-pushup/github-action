@@ -4,6 +4,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { simpleGit } from 'simple-git'
 import { collect } from './collect'
+import { commentOnPR } from './comment'
 import { compare } from './compare'
 import { parseInputs } from './inputs'
 
@@ -16,7 +17,7 @@ export async function run(git = simpleGit()): Promise<void> {
     core.debug(`Collected current report at ${currReportPath}`)
 
     if (github.context.payload.pull_request) {
-      const baseBranch: string = github.context.payload.pull_request.base.ref
+      const baseBranch = github.context.payload.pull_request.base.ref as string
       core.debug(`PR detected, preparing to compare base branch ${baseBranch}`)
 
       await git.fetch('origin', baseBranch, ['--depth=1'])
@@ -43,7 +44,8 @@ export async function run(git = simpleGit()): Promise<void> {
       )
       core.debug(`Compared reports and generated diff at ${diffPath}`)
 
-      // TODO: PR comment
+      await commentOnPR(diffPath, inputs)
+      core.debug(`Commented on PR #${github.context.issue.number}`)
     }
   } catch (error) {
     core.setFailed(error instanceof Error ? error.message : `${error}`)

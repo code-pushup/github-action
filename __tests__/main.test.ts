@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import type { Context } from '@actions/github/lib/context'
+import type { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods'
 import {
   copyFile,
   mkdir,
@@ -58,8 +59,41 @@ describe('code-pushup action', () => {
 
     // @ts-expect-error context is readonly
     github.context = {
-      payload: {}
+      repo: {
+        owner: 'dunder-mifflin',
+        repo: 'website'
+      },
+      payload: {},
+      get issue() {
+        return {
+          owner: github.context.repo.owner,
+          repo: github.context.repo.repo,
+          number:
+            github.context.payload.pull_request?.number ??
+            github.context.payload.number
+        }
+      }
     } as Context
+
+    const mockOctokit = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      paginate: (async () => []) as any,
+      rest: {
+        issues: {
+          createComment: async () =>
+            ({
+              data: { id: 1 }
+            }) as RestEndpointMethodTypes['issues']['createComment']['response'],
+          updateComment: async ({
+            comment_id
+          }: RestEndpointMethodTypes['issues']['updateComment']['parameters']) =>
+            ({
+              data: { id: comment_id }
+            }) as RestEndpointMethodTypes['issues']['updateComment']['response']
+        }
+      }
+    } as ReturnType<typeof github.getOctokit>
+    jest.spyOn(github, 'getOctokit').mockReturnValue(mockOctokit)
 
     await rm(workDir, { recursive: true, force: true })
     await mkdir(workDir, { recursive: true })
@@ -91,10 +125,7 @@ describe('code-pushup action', () => {
 
   describe('push event', () => {
     beforeEach(async () => {
-      // @ts-expect-error context is readonly
-      github.context = {
-        payload: {}
-      } as Context
+      github.context.payload = {}
 
       await git.checkout('main')
     })
@@ -132,16 +163,14 @@ describe('code-pushup action', () => {
 
   describe('pull request event', () => {
     beforeEach(async () => {
-      // @ts-expect-error context is readonly
-      github.context = {
-        payload: {
-          pull_request: {
-            base: {
-              ref: 'main'
-            }
+      github.context.payload = {
+        pull_request: {
+          number: 42,
+          base: {
+            ref: 'main'
           }
         }
-      } as Context
+      }
 
       await git.checkoutLocalBranch('feature-1')
 
