@@ -72,6 +72,9 @@
   },
   "devDependencies": {
     "@code-pushup/cli": "^0.28.0",
+    "@code-pushup/coverage-plugin": "^0.28.0",
+    "@code-pushup/eslint-plugin": "^0.28.0",
+    "@code-pushup/js-packages-plugin": "^0.28.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.30",
     "@typescript-eslint/eslint-plugin": "^7.3.1",

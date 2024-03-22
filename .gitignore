@@ -104,3 +104,6 @@ __tests__/runner/*
 
 # temporary files
 tmp/
+
+# Code PushUp reports
+.code-pushup/
