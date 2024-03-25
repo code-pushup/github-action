@@ -15,6 +15,7 @@ const config = {
     }),
     await jsPackagesPlugin({ packageManager: 'npm' })
   ],
+
   categories: [
     {
       slug: 'bug-prevention',
@@ -52,7 +53,17 @@ const config = {
         }
       ]
     }
-  ]
+  ],
+
+  ...(process.env.CP_SERVER &&
+    process.env.CP_API_KEY && {
+      upload: {
+        organization: 'code-pushup',
+        project: 'github-action',
+        server: process.env.CP_SERVER,
+        apiKey: process.env.CP_API_KEY
+      }
+    })
 }
 
 export default config
