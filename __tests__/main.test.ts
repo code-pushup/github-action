@@ -1,3 +1,4 @@
+import type { ArtifactClient, UploadArtifactResponse } from '@actions/artifact'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import type { Context } from '@actions/github/lib/context'
@@ -10,7 +11,7 @@ import {
   rm,
   writeFile
 } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { simpleGit, type SimpleGit } from 'simple-git'
 import type { ActionInputs } from '../src/inputs'
 import { run } from '../src/main'
@@ -22,6 +23,7 @@ describe('code-pushup action', () => {
   const workDir = join('tmp', 'git-repo')
 
   let git: SimpleGit
+  let artifact: ArtifactClient
 
   let cwdSpy: jest.SpiedFunction<typeof process.cwd>
 
@@ -42,6 +44,8 @@ describe('code-pushup action', () => {
           return 'npx code-pushup'
         case 'directory':
           return workDir
+        case 'retention':
+          return '14'
         default:
           return ''
       }
@@ -51,6 +55,8 @@ describe('code-pushup action', () => {
       .mockImplementation((name: string): boolean => {
         switch (name as keyof ActionInputs) {
           case 'silent':
+            return true
+          case 'artifacts':
             return true
           default:
             return false
@@ -82,7 +88,7 @@ describe('code-pushup action', () => {
         issues: {
           createComment: async () =>
             ({
-              data: { id: 1 }
+              data: { id: 10 }
             }) as RestEndpointMethodTypes['issues']['createComment']['response'],
           updateComment: async ({
             comment_id
@@ -94,6 +100,12 @@ describe('code-pushup action', () => {
       }
     } as ReturnType<typeof github.getOctokit>
     jest.spyOn(github, 'getOctokit').mockReturnValue(mockOctokit)
+
+    artifact = {
+      uploadArtifact: jest.fn().mockResolvedValue({
+        id: 123
+      } as UploadArtifactResponse) as ArtifactClient['uploadArtifact']
+    } as ArtifactClient
 
     await rm(workDir, { recursive: true, force: true })
     await mkdir(workDir, { recursive: true })
@@ -131,18 +143,28 @@ describe('code-pushup action', () => {
     })
 
     it('should collect report', async () => {
-      await run(git)
+      await run(artifact, git)
 
       expect(core.setFailed).not.toHaveBeenCalled()
+
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(artifact.uploadArtifact).toHaveBeenCalledWith<
+        Parameters<ArtifactClient['uploadArtifact']>
+      >(
+        'code-pushup-report',
+        ['report.json', 'report.md'],
+        resolve(join(workDir, '.code-pushup')),
+        { retentionDays: 14 }
+      )
+
+      expect(core.setOutput).toHaveBeenCalledWith('artifact-id', 123)
 
       const jsonPromise = readFile(
         join(workDir, '.code-pushup/report.json'),
         'utf8'
       )
       await expect(jsonPromise).resolves.toBeTruthy()
-
       const report = JSON.parse(await jsonPromise) as Report
-
       expect(report).toEqual(
         expect.objectContaining({
           plugins: [
@@ -181,17 +203,17 @@ describe('code-pushup action', () => {
     })
 
     it('should compare reports', async () => {
-      await run(git)
+      await run(artifact, git)
 
       expect(core.setFailed).not.toHaveBeenCalled()
+
+      expect(core.setOutput).toHaveBeenCalledWith('comment-id', 10)
 
       const mdPromise = readFile(
         join(workDir, '.code-pushup/report-diff.md'),
         'utf8'
       )
-
       await expect(mdPromise).resolves.toBeTruthy()
-
       const md = await mdPromise
       expect(
         md.replace(/(?<=commit )`[\da-f]{7}`/g, '`<commit-sha>`')

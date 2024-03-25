@@ -24,8 +24,17 @@ inputs:
     description: GITHUB_TOKEN or a repo scoped PAT
     required: true
     default: ${{ github.token }}
+  artifacts:
+    description: Upload/download artifacts for caching code-pushup reports
+    required: true
+    default: true
+  retention:
+    description: Artifact retention period in days
+    required: false
 
 outputs:
+  artifact-id:
+    description: ID of uploaded report artifact
   comment-id:
     description: ID of created or updated GitHub comment
 

@@ -1,3 +1,4 @@
+import { DefaultArtifactClient } from '@actions/artifact'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import fs from 'node:fs/promises'
@@ -8,13 +9,31 @@ import { commentOnPR } from './comment'
 import { compare } from './compare'
 import { parseInputs } from './inputs'
 
-export async function run(git = simpleGit()): Promise<void> {
+const ARTIFACT_NAME = 'code-pushup-report'
+
+export async function run(
+  artifact = new DefaultArtifactClient(),
+  git = simpleGit()
+): Promise<void> {
   try {
     const inputs = parseInputs()
 
-    const { jsonFilePath: currReportPath } = await collect(inputs)
+    const { jsonFilePath: currReportPath, artifactData } = await collect(inputs)
     const currReport = await fs.readFile(currReportPath, 'utf8')
     core.debug(`Collected current report at ${currReportPath}`)
+
+    if (inputs.artifacts) {
+      const { id, size } = await artifact.uploadArtifact(
+        ARTIFACT_NAME,
+        artifactData.files,
+        artifactData.rootDir,
+        inputs.retention != null
+          ? { retentionDays: inputs.retention }
+          : undefined
+      )
+      core.setOutput('artifact-id', id)
+      core.debug(`Uploaded current report artifact (${size} bytes)`)
+    }
 
     if (github.context.payload.pull_request) {
       const baseBranch = github.context.payload.pull_request.base.ref as string
@@ -44,7 +63,8 @@ export async function run(git = simpleGit()): Promise<void> {
       )
       core.debug(`Compared reports and generated diff at ${diffPath}`)
 
-      await commentOnPR(diffPath, inputs)
+      const commentId = await commentOnPR(diffPath, inputs)
+      core.setOutput('comment-id', commentId)
       core.debug(`Commented on PR #${github.context.issue.number}`)
     }
   } catch (error) {
