@@ -11,7 +11,7 @@ import {
   rm,
   writeFile
 } from 'node:fs/promises'
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
 import { simpleGit, type SimpleGit } from 'simple-git'
 import type { ActionInputs } from '../src/inputs'
 import { run } from '../src/main'
@@ -152,8 +152,11 @@ describe('code-pushup action', () => {
         Parameters<ArtifactClient['uploadArtifact']>
       >(
         'code-pushup-report',
-        ['report.json', 'report.md'],
-        resolve(join(workDir, '.code-pushup')),
+        expect.arrayContaining([
+          expect.stringContaining('report.json'),
+          expect.stringContaining('report.md')
+        ]),
+        expect.stringContaining('.code-pushup'),
         { retentionDays: 14 }
       )
 

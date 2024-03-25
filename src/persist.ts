@@ -32,7 +32,6 @@ export function persistedCliFiles({
 }): PersistedCliFiles {
   const rootDir = path.join(directory, PERSIST_OUTPUT_DIR)
   const filename = isDiff ? `${PERSIST_FILENAME}-diff` : PERSIST_FILENAME
-  const files = PERSIST_FORMAT.map(format => `${filename}.${format}`)
   const filePaths = PERSIST_FORMAT.reduce(
     (acc, format) => ({
       ...acc,
@@ -40,6 +39,7 @@ export function persistedCliFiles({
     }),
     {} as Omit<PersistedCliFiles, 'artifactData'>
   )
+  const files = Object.values(filePaths)
 
   return {
     ...filePaths,
