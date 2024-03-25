@@ -70,6 +70,9 @@ jobs:
       - name: Test Local Action
         id: test-action
         uses: ./
+        env:
+          CP_SERVER: ${{ secrets.CP_SERVER }}
+          CP_API_KEY: ${{ secrets.CP_API_KEY }}
 
       - name: Print Output
         id: output
