@@ -12,7 +12,7 @@ export async function run(git = simpleGit()): Promise<void> {
   try {
     const inputs = parseInputs()
 
-    const currReportPath = await collect(inputs)
+    const { jsonFilePath: currReportPath } = await collect(inputs)
     const currReport = await fs.readFile(currReportPath, 'utf8')
     core.debug(`Collected current report at ${currReportPath}`)
 
@@ -24,7 +24,7 @@ export async function run(git = simpleGit()): Promise<void> {
       await git.checkout(['-f', baseBranch])
       core.debug(`Switched to base branch ${baseBranch}`)
 
-      const prevReportPath = await collect(inputs)
+      const { jsonFilePath: prevReportPath } = await collect(inputs)
       const prevReport = await fs.readFile(prevReportPath, 'utf8')
       core.debug(`Collected previous report at ${prevReportPath}`)
 
@@ -38,7 +38,7 @@ export async function run(git = simpleGit()): Promise<void> {
       await fs.writeFile(prevPath, prevReport)
       core.debug(`Saved reports to ${currPath} and ${prevPath}`)
 
-      const diffPath = await compare(
+      const { mdFilePath: diffPath } = await compare(
         { before: prevPath, after: currPath },
         inputs
       )

@@ -1,6 +1,10 @@
 import { exec } from '@actions/exec'
-import path from 'node:path'
 import type { ActionInputs } from './inputs'
+import {
+  persistCliOptions,
+  persistedCliFiles,
+  type PersistedCliFiles
+} from './persist'
 
 type CompareOptions = {
   before: string
@@ -10,11 +14,7 @@ type CompareOptions = {
 export async function compare(
   { before, after }: CompareOptions,
   { bin, config, directory, silent }: ActionInputs
-): Promise<string> {
-  const outputDir = '.code-pushup'
-  const filename = 'report'
-  const outputPath = path.join(directory, outputDir, `${filename}-diff.md`)
-
+): Promise<PersistedCliFiles> {
   await exec(
     bin,
     [
@@ -22,13 +22,10 @@ export async function compare(
       `--before=${before}`,
       `--after=${after}`,
       ...(config ? [`--config=${config}`] : []),
-      `--persist.outputDir=${outputDir}`,
-      `--persist.filename=${filename}`,
-      '--persist.format=json',
-      '--persist.format=md'
+      ...persistCliOptions()
     ],
     { cwd: directory, silent }
   )
 
-  return outputPath
+  return persistedCliFiles({ directory, isDiff: true })
 }
