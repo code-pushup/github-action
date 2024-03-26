@@ -2,6 +2,7 @@ import type { ArtifactClient, UploadArtifactResponse } from '@actions/artifact'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import type { Context } from '@actions/github/lib/context'
+import type { components } from '@octokit/openapi-types'
 import type { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods'
 import {
   copyFile,
@@ -86,16 +87,22 @@ describe('code-pushup action', () => {
       paginate: (async () => []) as any,
       rest: {
         issues: {
-          createComment: async () =>
-            ({
-              data: { id: 10 }
-            }) as RestEndpointMethodTypes['issues']['createComment']['response'],
+          createComment: async () => ({
+            data: { id: 10 }
+          }),
           updateComment: async ({
             comment_id
-          }: RestEndpointMethodTypes['issues']['updateComment']['parameters']) =>
-            ({
-              data: { id: comment_id }
-            }) as RestEndpointMethodTypes['issues']['updateComment']['response']
+          }: RestEndpointMethodTypes['issues']['updateComment']['parameters']) => ({
+            data: { id: comment_id }
+          })
+        },
+        actions: {
+          getWorkflowRun: async () => ({ data: { workflow_id: 3 } }),
+          listWorkflowRuns: async () => ({
+            data: {
+              workflow_runs: [] as components['schemas']['workflow-run'][]
+            }
+          })
         }
       }
     } as ReturnType<typeof github.getOctokit>
