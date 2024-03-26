@@ -225,9 +225,7 @@ describe('code-pushup action', () => {
       )
       await expect(mdPromise).resolves.toBeTruthy()
       const md = await mdPromise
-      expect(
-        md.replace(/(?<=commit )`[\da-f]{7}`/g, '`<commit-sha>`')
-      ).toMatchSnapshot()
+      expect(md.replace(/[\da-f]{40}/g, '`<commit-sha>`')).toMatchSnapshot()
     })
   })
 })
