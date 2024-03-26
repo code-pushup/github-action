@@ -4,12 +4,17 @@ import * as github from '@actions/github'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { simpleGit } from 'simple-git'
+import {
+  DIFF_ARTIFACT_NAME,
+  REPORT_ARTIFACT_NAME,
+  downloadReportArtifact
+} from './artifact'
 import { collect } from './collect'
 import { commentOnPR } from './comment'
 import { compare } from './compare'
 import { parseInputs } from './inputs'
-
-const ARTIFACT_NAME = 'code-pushup-report'
+import type { PersistedCliFiles } from './persist'
+import { isPullRequest } from './pull-request'
 
 export async function run(
   artifact = new DefaultArtifactClient(),
@@ -18,15 +23,16 @@ export async function run(
   try {
     const inputs = parseInputs()
 
-    const { jsonFilePath: currReportPath, artifactData } = await collect(inputs)
+    const { jsonFilePath: currReportPath, artifactData: reportArtifact } =
+      await collect(inputs)
     const currReport = await fs.readFile(currReportPath, 'utf8')
     core.debug(`Collected current report at ${currReportPath}`)
 
     if (inputs.artifacts) {
       const { id, size } = await artifact.uploadArtifact(
-        ARTIFACT_NAME,
-        artifactData.files,
-        artifactData.rootDir,
+        REPORT_ARTIFACT_NAME,
+        reportArtifact.files,
+        reportArtifact.rootDir,
         inputs.retention != null
           ? { retentionDays: inputs.retention }
           : undefined
@@ -35,20 +41,34 @@ export async function run(
       core.debug(`Uploaded current report artifact (${size} bytes)`)
     }
 
-    if (github.context.payload.pull_request) {
-      const baseBranch = github.context.payload.pull_request.base.ref as string
-      core.debug(`PR detected, preparing to compare base branch ${baseBranch}`)
+    if (isPullRequest(github.context.payload.pull_request)) {
+      const base = github.context.payload.pull_request.base
+      core.debug(`PR detected, preparing to compare base branch ${base.ref}`)
 
-      await git.fetch('origin', baseBranch, ['--depth=1'])
-      await git.checkout(['-f', baseBranch])
-      core.debug(`Switched to base branch ${baseBranch}`)
+      let prevReport: string
 
-      const { jsonFilePath: prevReportPath } = await collect(inputs)
-      const prevReport = await fs.readFile(prevReportPath, 'utf8')
-      core.debug(`Collected previous report at ${prevReportPath}`)
+      let cachedBaseReport: PersistedCliFiles | null = null
+      if (inputs.artifacts) {
+        cachedBaseReport = await downloadReportArtifact(artifact, base, inputs)
+        core.debug(
+          `Previous report artifact ${cachedBaseReport ? `found and downloaded to ${cachedBaseReport.jsonFilePath}` : `not found`}`
+        )
+      }
 
-      await git.checkout(['-f', '-'])
-      core.debug('Switched back to current branch')
+      if (cachedBaseReport) {
+        prevReport = await fs.readFile(cachedBaseReport.jsonFilePath, 'utf8')
+      } else {
+        await git.fetch('origin', base.ref, ['--depth=1'])
+        await git.checkout(['-f', base.ref])
+        core.debug(`Switched to base branch ${base.ref}`)
+
+        const { jsonFilePath: prevReportPath } = await collect(inputs)
+        prevReport = await fs.readFile(prevReportPath, 'utf8')
+        core.debug(`Collected previous report at ${prevReportPath}`)
+
+        await git.checkout(['-f', '-'])
+        core.debug('Switched back to current branch')
+      }
 
       const reportsDir = path.join(inputs.directory, '.code-pushup')
       const currPath = path.join(reportsDir, 'curr-report.json')
@@ -57,15 +77,25 @@ export async function run(
       await fs.writeFile(prevPath, prevReport)
       core.debug(`Saved reports to ${currPath} and ${prevPath}`)
 
-      const { mdFilePath: diffPath } = await compare(
-        { before: prevPath, after: currPath },
-        inputs
-      )
+      const { mdFilePath: diffPath, artifactData: diffArtifact } =
+        await compare({ before: prevPath, after: currPath }, inputs)
       core.debug(`Compared reports and generated diff at ${diffPath}`)
 
       const commentId = await commentOnPR(diffPath, inputs)
       core.setOutput('comment-id', commentId)
       core.debug(`Commented on PR #${github.context.issue.number}`)
+
+      if (inputs.artifacts) {
+        const { size } = await artifact.uploadArtifact(
+          DIFF_ARTIFACT_NAME,
+          diffArtifact.files,
+          diffArtifact.rootDir,
+          inputs.retention != null
+            ? { retentionDays: inputs.retention }
+            : undefined
+        )
+        core.debug(`Uploaded report diff artifact (${size} bytes)`)
+      }
     }
   } catch (error) {
     core.setFailed(error instanceof Error ? error.message : `${error}`)

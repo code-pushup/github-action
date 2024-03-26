@@ -49,3 +49,28 @@ export function persistedCliFiles({
     }
   }
 }
+
+export function findPersistedFiles(
+  rootDir: string,
+  files: string[]
+): PersistedCliFiles {
+  const filePaths = PERSIST_FORMAT.reduce(
+    (acc, format) => {
+      const matchedFile = files.find(
+        file => file === `${PERSIST_FILENAME}.${format}`
+      )
+      if (!matchedFile) {
+        return acc
+      }
+      return { ...acc, [`${format}FilePath`]: path.join(rootDir, matchedFile) }
+    },
+    {} as Omit<PersistedCliFiles, 'artifactData'>
+  )
+  return {
+    ...filePaths,
+    artifactData: {
+      rootDir,
+      files: Object.values(filePaths)
+    }
+  }
+}
