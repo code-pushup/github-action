@@ -1,18 +1,13 @@
-import {
-  ArtifactNotFoundError,
-  type ArtifactClient,
-  type FindOptions
-} from '@actions/artifact'
+import { type ArtifactClient } from '@actions/artifact'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import fs from 'node:fs/promises'
 import type { ActionInputs } from './inputs'
-import { findPersistedFiles, type PersistedCliFiles } from './persist'
+import { type PersistedCliFiles } from './persist'
 
 export const REPORT_ARTIFACT_NAME = 'code-pushup-report'
 export const DIFF_ARTIFACT_NAME = 'code-pushup-report-diff'
 
-const ARTIFACT_DIR = 'tmp'
+// const ARTIFACT_DIR = 'tmp'
 
 export async function downloadReportArtifact(
   artifact: ArtifactClient,
@@ -52,46 +47,49 @@ export async function downloadReportArtifact(
   }
   core.debug(`Found workflow run ${workflowRun.id} for commit ${branch.sha}`)
 
-  try {
-    const findBy: FindOptions['findBy'] = {
-      workflowRunId: workflowRun.id,
-      repositoryOwner: github.context.repo.owner,
-      repositoryName: github.context.repo.repo,
-      token
-    }
+  return null
+  // try {
+  //   const findBy: FindOptions['findBy'] = {
+  //     workflowRunId: workflowRun.id,
+  //     repositoryOwner: github.context.repo.owner,
+  //     repositoryName: github.context.repo.repo,
+  //     token
+  //   }
 
-    const { artifact: reportArtifact } = await artifact.getArtifact(
-      REPORT_ARTIFACT_NAME,
-      { findBy }
-    )
-    core.debug(
-      `Found ${reportArtifact.name} artifact with ID ${reportArtifact.id} in workflow run ${workflowRun.id}`
-    )
+  //   const { artifact: reportArtifact } = await artifact.getArtifact(
+  //     REPORT_ARTIFACT_NAME,
+  //     { findBy }
+  //   )
+  //   core.debug(
+  //     `Found ${reportArtifact.name} artifact with ID ${reportArtifact.id} in workflow run ${workflowRun.id}`
+  //   )
 
-    await fs.rm(ARTIFACT_DIR, { recursive: true, force: true })
-    const { downloadPath } = await artifact.downloadArtifact(
-      reportArtifact.id,
-      { findBy, path: ARTIFACT_DIR }
-    )
-    if (!downloadPath) {
-      throw new Error('Unexpected empty downloadPath')
-    }
-    const files = await fs.readdir(downloadPath)
-    core.debug(
-      `Downloaded artifact to ${downloadPath}, contains files: ${files.join(', ')}`
-    )
+  //   await fs.rm(ARTIFACT_DIR, { recursive: true, force: true })
+  //   const { downloadPath } = await artifact.downloadArtifact(
+  //     reportArtifact.id,
+  //     { findBy, path: ARTIFACT_DIR }
+  //   )
+  //   if (!downloadPath) {
+  //     throw new Error('Unexpected empty downloadPath')
+  //   }
+  //   console.log(ARTIFACT_DIR)
+  //   const files = await fs.readdir(downloadPath)
+  //   console.log(files)
+  //   core.debug(
+  //     `Downloaded artifact to ${downloadPath}, contains files: ${files.join(', ')}`
+  //   )
 
-    return findPersistedFiles(downloadPath, files)
-  } catch (err) {
-    if (err instanceof ArtifactNotFoundError) {
-      core.info(
-        `Artifact not found for ${branch.ref} branch's commit ${branch.sha}`
-      )
-      return null
-    }
-    if (err instanceof Error || typeof err === 'string') {
-      core.error(err)
-    }
-    throw err
-  }
+  //   return findPersistedFiles(downloadPath, files)
+  // } catch (err) {
+  //   if (err instanceof ArtifactNotFoundError) {
+  //     core.info(
+  //       `Artifact not found for ${branch.ref} branch's commit ${branch.sha}`
+  //     )
+  //     return null
+  //   }
+  //   if (err instanceof Error || typeof err === 'string') {
+  //     core.error(err)
+  //   }
+  //   throw err
+  // }
 }
