@@ -20,8 +20,10 @@ const config: CoreConfig = {
           directory: fileURLToPath(dirname(import.meta.url)),
           pattern: /\.[jt]s$/
         })
-        const jsFileCount = paths.filter(path => path.endsWith('.js')).length
-        const tsFileCount = paths.filter(path => path.endsWith('.ts')).length
+        const jsPaths = paths.filter(path => path.endsWith('.js'))
+        const tsPaths = paths.filter(path => path.endsWith('.ts'))
+        const jsFileCount = jsPaths.length
+        const tsFileCount = tsPaths.length
         const ratio = tsFileCount / (jsFileCount + tsFileCount)
         const percentage = Math.round(ratio * 100)
         return [
@@ -29,7 +31,14 @@ const config: CoreConfig = {
             slug: 'ts-files',
             value: percentage,
             score: ratio,
-            displayValue: `${percentage}% converted`
+            displayValue: `${percentage}% converted`,
+            details: {
+              issues: jsPaths.map(file => ({
+                message: 'Use .ts file extension instead of .js',
+                severity: 'warning',
+                source: { file }
+              }))
+            }
           }
         ]
       }
