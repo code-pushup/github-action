@@ -31,6 +31,10 @@ inputs:
   retention:
     description: Artifact retention period in days
     required: false
+  annotations:
+    description: Create file annotations in GitHub
+    required: true
+    default: true
 
 outputs:
   artifact-id:

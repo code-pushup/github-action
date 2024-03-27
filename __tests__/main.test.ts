@@ -59,6 +59,8 @@ describe('code-pushup action', () => {
             return true
           case 'artifacts':
             return true
+          case 'annotations':
+            return true
           default:
             return false
         }
@@ -195,27 +197,30 @@ describe('code-pushup action', () => {
 
   describe('pull request event', () => {
     beforeEach(async () => {
-      github.context.payload = {
-        pull_request: {
-          number: 42,
-          base: {
-            ref: 'main'
-          }
-        }
-      }
-
       await git.checkoutLocalBranch('feature-1')
 
       await rename(join(workDir, 'index.js'), join(workDir, 'index.ts'))
 
       await git.add('index.ts')
       await git.commit('Convert JS file to TS')
+
+      github.context.payload = {
+        pull_request: {
+          number: 42,
+          head: { ref: 'feature-1', sha: await git.revparse('feature-1') },
+          base: { ref: 'main', sha: await git.revparse('main') }
+        }
+      }
     })
 
     it('should compare reports', async () => {
       await run(artifact, git)
 
       expect(core.setFailed).not.toHaveBeenCalled()
+
+      expect(core.error).toHaveBeenCalledTimes(0)
+      expect(core.warning).toHaveBeenCalledTimes(0)
+      expect(core.notice).toHaveBeenCalledTimes(0)
 
       expect(core.setOutput).toHaveBeenCalledWith('comment-id', 10)
 

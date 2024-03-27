@@ -4,6 +4,7 @@ import * as github from '@actions/github'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { simpleGit } from 'simple-git'
+import { createAnnotationsFromIssues } from './annotations'
 import {
   DIFF_ARTIFACT_NAME,
   REPORT_ARTIFACT_NAME,
@@ -12,7 +13,9 @@ import {
 import { collect } from './collect'
 import { commentOnPR } from './comment'
 import { compare } from './compare'
+import { listChangedFiles } from './diff'
 import { parseInputs } from './inputs'
+import { filterRelevantIssues } from './issues'
 import type { PersistedCliFiles } from './persist'
 import { isPullRequest } from './pull-request'
 
@@ -42,7 +45,7 @@ export async function run(
     }
 
     if (isPullRequest(github.context.payload.pull_request)) {
-      const base = github.context.payload.pull_request.base
+      const { base, head } = github.context.payload.pull_request
       core.debug(`PR detected, preparing to compare base branch ${base.ref}`)
 
       let prevReport: string
@@ -77,13 +80,31 @@ export async function run(
       await fs.writeFile(prevPath, prevReport)
       core.debug(`Saved reports to ${currPath} and ${prevPath}`)
 
-      const { mdFilePath: diffPath, artifactData: diffArtifact } =
-        await compare({ before: prevPath, after: currPath }, inputs)
-      core.debug(`Compared reports and generated diff at ${diffPath}`)
+      const {
+        mdFilePath: diffMdPath,
+        jsonFilePath: diffJsonPath,
+        artifactData: diffArtifact
+      } = await compare({ before: prevPath, after: currPath }, inputs)
+      core.debug(`Compared reports and generated diff at ${diffMdPath}`)
 
-      const commentId = await commentOnPR(diffPath, inputs)
+      const commentId = await commentOnPR(diffMdPath, inputs)
       core.setOutput('comment-id', commentId)
       core.debug(`Commented on PR #${github.context.issue.number}`)
+
+      if (inputs.annotations) {
+        const reportsDiff = await fs.readFile(diffJsonPath, 'utf8')
+        const changedFiles = await listChangedFiles({ base, head }, git)
+        const issues = filterRelevantIssues({
+          currReport: JSON.parse(currReport),
+          prevReport: JSON.parse(prevReport),
+          reportsDiff: JSON.parse(reportsDiff),
+          changedFiles
+        })
+        createAnnotationsFromIssues(issues)
+        core.debug(
+          `Found ${issues.length} relevant issues for ${changedFiles.length} changed files and created GitHub annotations`
+        )
+      }
 
       if (inputs.artifacts) {
         const { size } = await artifact.uploadArtifact(

@@ -9,6 +9,7 @@ export type ActionInputs = {
   silent: boolean
   artifacts: boolean
   retention: number | null
+  annotations: boolean
 }
 
 export function parseInputs(): ActionInputs {
@@ -19,6 +20,7 @@ export function parseInputs(): ActionInputs {
   const silent = core.getBooleanInput('silent')
   const artifacts = core.getBooleanInput('artifacts')
   const retention = parseInteger(core.getInput('retention'))
+  const annotations = core.getBooleanInput('annotations')
 
   return {
     token,
@@ -27,7 +29,8 @@ export function parseInputs(): ActionInputs {
     directory,
     silent,
     artifacts,
-    retention
+    retention,
+    annotations
   }
 }
 
