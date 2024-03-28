@@ -16,3 +16,8 @@ MD030:
 # Code block style
 MD046:
   style: fenced
+
+# Line length - ignored for tables
+MD013:
+  line_length: 80
+  tables: false
