@@ -13,7 +13,7 @@ import {
   writeFile
 } from 'node:fs/promises'
 import { join } from 'node:path'
-import { simpleGit, type SimpleGit } from 'simple-git'
+import { simpleGit, type DiffResult, type SimpleGit } from 'simple-git'
 import type { ActionInputs } from '../src/inputs'
 import { run } from '../src/main'
 
@@ -127,6 +127,9 @@ describe('code-pushup action', () => {
     git = simpleGit(workDir)
 
     jest.spyOn(git, 'fetch').mockImplementation()
+    jest.spyOn(git, 'diffSummary').mockResolvedValue({
+      files: [{ file: 'index.ts', binary: false }]
+    } as DiffResult)
 
     await git.init()
     await git.addConfig('user.name', 'John Doe')

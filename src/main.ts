@@ -45,7 +45,7 @@ export async function run(
     }
 
     if (isPullRequest(github.context.payload.pull_request)) {
-      const { base, head } = github.context.payload.pull_request
+      const { base } = github.context.payload.pull_request
       core.debug(`PR detected, preparing to compare base branch ${base.ref}`)
 
       let prevReport: string
@@ -94,7 +94,10 @@ export async function run(
       if (inputs.annotations) {
         await git.fetch('origin', base.ref, ['--depth=1'])
         const reportsDiff = await fs.readFile(diffJsonPath, 'utf8')
-        const changedFiles = await listChangedFiles({ base, head }, git)
+        const changedFiles = await listChangedFiles(
+          { base: 'FETCH_HEAD', head: 'HEAD' },
+          git
+        )
         const issues = filterRelevantIssues({
           currReport: JSON.parse(currReport),
           prevReport: JSON.parse(prevReport),
