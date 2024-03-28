@@ -2,8 +2,8 @@ import { DiffNameStatus, simpleGit } from 'simple-git'
 
 export async function listChangedFiles(
   refs: {
-    base: { ref: string; sha: string }
-    head: { ref: string; sha: string }
+    base: string
+    head: string
   },
   git = simpleGit()
 ): Promise<string[]> {
@@ -13,8 +13,8 @@ export async function listChangedFiles(
   ]
   const { files } = await git.diffSummary([
     `--diff-filter=${statuses.join('')}`,
-    refs.base.ref,
-    refs.head.ref
+    refs.base,
+    refs.head
   ])
   return files.filter(({ binary }) => !binary).map(({ file }) => file)
 }
