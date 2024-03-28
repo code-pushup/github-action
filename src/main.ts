@@ -13,7 +13,6 @@ import {
 import { collect } from './collect'
 import { commentOnPR } from './comment'
 import { compare } from './compare'
-import { listChangedFiles } from './diff'
 import { parseInputs } from './inputs'
 import { filterRelevantIssues } from './issues'
 import type { PersistedCliFiles } from './persist'
@@ -45,7 +44,8 @@ export async function run(
     }
 
     if (isPullRequest(github.context.payload.pull_request)) {
-      const { base, head } = github.context.payload.pull_request
+      const { base } = github.context.payload.pull_request
+      // const { base, head } = github.context.payload.pull_request
       core.debug(`PR detected, preparing to compare base branch ${base.ref}`)
 
       let prevReport: string
@@ -93,16 +93,17 @@ export async function run(
 
       if (inputs.annotations) {
         const reportsDiff = await fs.readFile(diffJsonPath, 'utf8')
-        const changedFiles = await listChangedFiles({ base, head }, git)
+        // const changedFiles = await listChangedFiles({ base, head }, git)
         const issues = filterRelevantIssues({
           currReport: JSON.parse(currReport),
           prevReport: JSON.parse(prevReport),
-          reportsDiff: JSON.parse(reportsDiff),
-          changedFiles
+          reportsDiff: JSON.parse(reportsDiff)
+          // changedFiles
         })
         createAnnotationsFromIssues(issues)
         core.debug(
-          `Found ${issues.length} relevant issues for ${changedFiles.length} changed files and created GitHub annotations`
+          // `Found ${issues.length} relevant issues for ${changedFiles.length} changed files and created GitHub annotations`
+          `Found ${issues.length} relevant issues and created GitHub annotations`
         )
       }
 
