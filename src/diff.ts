@@ -13,8 +13,8 @@ export async function listChangedFiles(
   ]
   const { files } = await git.diffSummary([
     `--diff-filter=${statuses.join('')}`,
-    refs.base.sha,
-    refs.head.sha
+    refs.base.ref,
+    refs.head.ref
   ])
   return files.filter(({ binary }) => !binary).map(({ file }) => file)
 }

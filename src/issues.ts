@@ -5,13 +5,13 @@ export type SourceFileIssue = Required<Issue> & { audit: AuditReport }
 export function filterRelevantIssues({
   currReport,
   prevReport,
-  reportsDiff
-  // changedFiles
+  reportsDiff,
+  changedFiles
 }: {
   currReport: Report
   prevReport: Report
   reportsDiff: ReportsDiff
-  // changedFiles: string[]
+  changedFiles: string[]
 }): SourceFileIssue[] {
   const audits = [...reportsDiff.audits.changed, ...reportsDiff.audits.added]
     .map(auditLink =>
@@ -28,7 +28,7 @@ export function filterRelevantIssues({
 
   return issues.filter(
     issue =>
-      // changedFiles.includes(issue.source?.file) &&
+      changedFiles.includes(issue.source?.file) &&
       !prevIssues.some(prevIssue => issuesAreEqual(prevIssue, issue))
   )
 }
