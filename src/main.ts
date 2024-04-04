@@ -13,7 +13,7 @@ import {
 import { collect } from './collect'
 import { commentOnPR } from './comment'
 import { compare } from './compare'
-import { listChangedFiles } from './diff'
+import { listChangedFiles } from './git'
 import { parseInputs } from './inputs'
 import { filterRelevantIssues } from './issues'
 import type { PersistedCliFiles } from './persist'
