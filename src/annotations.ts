@@ -5,7 +5,7 @@ export function createAnnotationsFromIssues(issues: SourceFileIssue[]): void {
   for (const issue of issues) {
     const message = issue.message
     const properties: core.AnnotationProperties = {
-      title: issue.audit.title,
+      title: `${issue.plugin.title} | ${issue.audit.title}`,
       file: issue.source.file,
       startLine: issue.source.position?.startLine,
       startColumn: issue.source.position?.startColumn,

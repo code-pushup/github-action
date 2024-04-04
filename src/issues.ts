@@ -1,6 +1,24 @@
-import type { AuditReport, Issue, Report, ReportsDiff } from './models'
+import {
+  adjustFileName,
+  adjustLine,
+  isFileChanged,
+  type ChangedFiles
+} from './git'
+import type {
+  Audit,
+  AuditReport,
+  Issue,
+  PluginMeta,
+  Report,
+  ReportsDiff
+} from './models'
 
-export type SourceFileIssue = Required<Issue> & { audit: AuditReport }
+export type SourceFileIssue = Required<Issue> & IssueContext
+
+type IssueContext = {
+  audit: Audit
+  plugin: PluginMeta
+}
 
 export function filterRelevantIssues({
   currReport,
@@ -11,45 +29,112 @@ export function filterRelevantIssues({
   currReport: Report
   prevReport: Report
   reportsDiff: ReportsDiff
-  changedFiles: string[]
+  changedFiles: ChangedFiles
 }): SourceFileIssue[] {
-  const audits = [...reportsDiff.audits.changed, ...reportsDiff.audits.added]
-    .map(auditLink =>
-      currReport.plugins
-        .find(plugin => plugin.slug === auditLink.plugin.slug)
-        ?.audits.find(audit => audit.slug === auditLink.slug)
-    )
-    .filter((audit): audit is AuditReport => audit != null)
+  const auditsWithPlugin = [
+    ...reportsDiff.audits.changed,
+    ...reportsDiff.audits.added
+  ]
+    .map((auditLink): [PluginMeta, AuditReport] | undefined => {
+      const plugin = currReport.plugins.find(
+        ({ slug }) => slug === auditLink.plugin.slug
+      )
+      const audit = plugin?.audits.find(({ slug }) => slug === auditLink.slug)
+      return plugin && audit && [plugin, audit]
+    })
+    .filter((ctx): ctx is [PluginMeta, AuditReport] => ctx != null)
 
-  const issues = audits.flatMap(getAuditIssues)
+  const issues = auditsWithPlugin.flatMap(([plugin, audit]) =>
+    getAuditIssues(audit, plugin)
+  )
   const prevIssues = prevReport.plugins.flatMap(plugin =>
-    plugin.audits.flatMap(getAuditIssues)
+    plugin.audits.flatMap(audit => getAuditIssues(audit, plugin))
   )
 
   return issues.filter(
     issue =>
-      changedFiles.includes(issue.source?.file) &&
-      !prevIssues.some(prevIssue => issuesAreEqual(prevIssue, issue))
+      isFileChanged(changedFiles, issue.source.file) &&
+      !prevIssues.some(prevIssue => issuesMatch(prevIssue, issue, changedFiles))
   )
 }
 
-function getAuditIssues(audit: AuditReport): SourceFileIssue[] {
+function getAuditIssues(
+  audit: AuditReport,
+  plugin: PluginMeta
+): SourceFileIssue[] {
   return (
     audit.details?.issues
       .filter((issue): issue is Required<Issue> => issue.source?.file != null)
-      .map(issue => ({ ...issue, audit })) ?? []
+      .map(issue => ({ ...issue, audit, plugin })) ?? []
   )
 }
 
-// TODO: naive implementation - lines may have been moved by unrelated changes, etc.
-function issuesAreEqual(a: Issue, b: Issue): boolean {
+function issuesMatch(
+  prev: SourceFileIssue,
+  curr: SourceFileIssue,
+  changedFiles: ChangedFiles
+): boolean {
   return (
-    a.message === b.message &&
-    a.severity === b.severity &&
-    a.source?.file === b.source?.file &&
-    a.source?.position?.startLine === b.source?.position?.startLine &&
-    a.source?.position?.startColumn === b.source?.position?.startColumn &&
-    a.source?.position?.endLine === b.source?.position?.endLine &&
-    a.source?.position?.endColumn === b.source?.position?.endColumn
+    prev.plugin.slug === curr.plugin.slug &&
+    prev.audit.slug === curr.audit.slug &&
+    prev.severity === curr.severity &&
+    removeDigits(prev.message) === removeDigits(curr.message) &&
+    adjustFileName(changedFiles, prev.source.file) === curr.source.file &&
+    positionsMatch(prev.source, curr.source, changedFiles)
   )
+}
+
+function removeDigits(message: string): string {
+  return message.replace(/\d+/g, '')
+}
+
+function positionsMatch(
+  prev: SourceFileIssue['source'],
+  curr: SourceFileIssue['source'],
+  changedFiles: ChangedFiles
+): boolean {
+  if (!hasPosition(prev) || !hasPosition(curr)) {
+    return hasPosition(prev) === hasPosition(curr)
+  }
+  return (
+    startLinesMatch(prev, curr, changedFiles) ||
+    adjustedLineSpansMatch(prev, curr, changedFiles)
+  )
+}
+
+function hasPosition(
+  source: SourceFileIssue['source']
+): source is Required<SourceFileIssue['source']> {
+  return source.position != null
+}
+
+function startLinesMatch(
+  prev: Required<SourceFileIssue['source']>,
+  curr: Required<SourceFileIssue['source']>,
+  changedFiles: ChangedFiles
+): boolean {
+  if (prev.position == null || curr.position == null) {
+    return prev.position === curr.position
+  }
+  return (
+    adjustLine(changedFiles, prev.file, prev.position.startLine) ===
+    curr.position.startLine
+  )
+}
+
+function adjustedLineSpansMatch(
+  prev: SourceFileIssue['source'],
+  curr: SourceFileIssue['source'],
+  changedFiles: ChangedFiles
+): boolean {
+  if (prev.position?.endLine == null || curr.position?.endLine == null) {
+    return false
+  }
+
+  const prevLineCount = prev.position.endLine - prev.position.startLine
+  const currLineCount = curr.position.endLine - curr.position.startLine
+  const currStartLineOffset =
+    adjustLine(changedFiles, curr.file, curr.position.startLine) -
+    curr.position.startLine
+  return prevLineCount === currLineCount - currStartLineOffset
 }
