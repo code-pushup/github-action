@@ -16,8 +16,8 @@ import type {
 export type SourceFileIssue = Required<Issue> & IssueContext
 
 type IssueContext = {
-  audit: Audit
-  plugin: PluginMeta
+  audit: Pick<Audit, 'slug' | 'title'>
+  plugin: Pick<PluginMeta, 'slug' | 'title'>
 }
 
 export function filterRelevantIssues({
@@ -69,7 +69,7 @@ function getAuditIssues(
   )
 }
 
-function issuesMatch(
+export function issuesMatch(
   prev: SourceFileIssue,
   curr: SourceFileIssue,
   changedFiles: ChangedFiles

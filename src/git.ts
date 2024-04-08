@@ -46,6 +46,8 @@ export async function listChangedFiles(
       .map(async ({ file, originalFile }) => {
         const diff = await git.diff([
           '--unified=0',
+          refs.base,
+          refs.head,
           '--',
           file,
           ...(originalFile ? [originalFile] : [])
@@ -112,7 +114,11 @@ export function adjustFileName(
   changedFiles: ChangedFiles,
   file: string
 ): string {
-  return changedFiles[file]?.originalFile ?? file
+  return (
+    Object.entries(changedFiles).find(
+      ([, { originalFile }]) => originalFile === file
+    )?.[0] ?? file
+  )
 }
 
 export function adjustLine(

@@ -130,6 +130,7 @@ describe('code-pushup action', () => {
     jest.spyOn(git, 'diffSummary').mockResolvedValue({
       files: [{ file: 'index.ts', binary: false }]
     } as DiffResult)
+    jest.spyOn(git, 'diff').mockResolvedValue('')
 
     await git.init()
     await git.addConfig('user.name', 'John Doe')
