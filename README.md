@@ -19,6 +19,7 @@ into your CI workflows.**
 - 💬 When a PR is opened/updated, compares reports for source and target
   branches, and creates/updates a PR comment which summarizes the impact of the
   changes.
+  - ⚠️ Also annotates changed files with new issues encountered by Code PushUp.
 
 ## Workflow example
 
@@ -48,15 +49,16 @@ jobs:
 
 The action may be customized using the following optional inputs:
 
-| Name        | Description                                      | Default                                                                                                |
-| :---------- | :----------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
-| `token`     | GitHub token for authorizing GitHub API requests | `${{ github.token }}`                                                                                  |
-| `artifacts` | Toggles if artifacts will we uploaded/downloaded | `true`                                                                                                 |
-| `retention` | Artifact retention period in days                | from repository settings                                                                               |
-| `directory` | Directory in which `code-pushup` should run      | `process.cwd()`                                                                                        |
-| `config`    | Path to config file (`--config` option)          | see [`@code-pushup/cli` docs](https://github.com/code-pushup/cli/tree/main/packages/cli#configuration) |
-| `silent`    | Toggles if logs from Code PushUp CLI are printed | `false`                                                                                                |
-| `bin`       | Command for executing Code PushUp CLI            | `npx --no-install code-pushup`                                                                         |
+| Name          | Description                                                              | Default                                                                                                |
+| :------------ | :----------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| `token`       | GitHub token for authorizing GitHub API requests                         | `${{ github.token }}`                                                                                  |
+| `annotations` | Toggles if annotations should be created for relevant Code PushUp issues | `true`                                                                                                 |
+| `artifacts`   | Toggles if artifacts will we uploaded/downloaded                         | `true`                                                                                                 |
+| `retention`   | Artifact retention period in days                                        | from repository settings                                                                               |
+| `directory`   | Directory in which `code-pushup` should run                              | `process.cwd()`                                                                                        |
+| `config`      | Path to config file (`--config` option)                                  | see [`@code-pushup/cli` docs](https://github.com/code-pushup/cli/tree/main/packages/cli#configuration) |
+| `silent`      | Toggles if logs from Code PushUp CLI are printed                         | `false`                                                                                                |
+| `bin`         | Command for executing Code PushUp CLI                                    | `npx --no-install code-pushup`                                                                         |
 
 For example, this will run `code-pushup` commands in a non-root folder and
 retain report artifacts for 30 days:
