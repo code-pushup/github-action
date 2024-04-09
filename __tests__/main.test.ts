@@ -222,9 +222,9 @@ describe('code-pushup action', () => {
 
       expect(core.setFailed).not.toHaveBeenCalled()
 
-      expect(core.error).toHaveBeenCalledTimes(0)
-      expect(core.warning).toHaveBeenCalledTimes(0)
-      expect(core.notice).toHaveBeenCalledTimes(0)
+      expect(core.error).not.toHaveBeenCalled()
+      expect(core.warning).not.toHaveBeenCalled()
+      expect(core.notice).not.toHaveBeenCalled()
 
       expect(core.setOutput).toHaveBeenCalledWith('comment-id', 10)
 
