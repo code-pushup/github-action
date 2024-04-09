@@ -97,7 +97,7 @@ function positionsMatch(
     return hasPosition(prev) === hasPosition(curr)
   }
   return (
-    startLinesMatch(prev, curr, changedFiles) ||
+    adjustedStartLinesMatch(prev, curr, changedFiles) ||
     adjustedLineSpansMatch(prev, curr, changedFiles)
   )
 }
@@ -108,7 +108,7 @@ function hasPosition(
   return source.position != null
 }
 
-function startLinesMatch(
+function adjustedStartLinesMatch(
   prev: Required<SourceFileIssue['source']>,
   curr: Required<SourceFileIssue['source']>,
   changedFiles: ChangedFiles
