@@ -1,4 +1,5 @@
-import { issuesMatch } from '../src/issues'
+import { getAuditImpactValue, issuesMatch } from '../src/issues'
+import type { Report } from '../src/models'
 
 describe('issues comparison', () => {
   it('should match issues with exact same metadata', () => {
@@ -161,5 +162,113 @@ describe('issues comparison', () => {
         }
       )
     ).toBe(true)
+  })
+})
+
+describe('issues sorting', () => {
+  it('should sum category contributions to calculate audit impact', () => {
+    expect(
+      getAuditImpactValue(
+        {
+          audit: {
+            slug: 'react-jsx-key',
+            title:
+              'Disallow missing `key` props in iterators/collection literals'
+          },
+          plugin: { slug: 'eslint', title: 'ESLint' }
+        },
+        {
+          categories: [
+            {
+              title: 'Performance',
+              // contributes 1%
+              refs: [
+                {
+                  type: 'group',
+                  plugin: 'lighthouse',
+                  slug: 'perf',
+                  weight: 99
+                },
+                {
+                  type: 'audit',
+                  plugin: 'eslint',
+                  slug: 'react-jsx-key',
+                  weight: 1
+                }
+              ]
+            },
+            {
+              title: 'Accessibility',
+              // 0 contribution
+              refs: [
+                {
+                  type: 'group',
+                  plugin: 'lighthouse',
+                  slug: 'a11y',
+                  weight: 100
+                }
+              ]
+            },
+            {
+              title: 'Code quality',
+              refs: [
+                {
+                  // group contributes 80%
+                  // audit contributes 10% in group
+                  // => audit contributes 8% in category
+                  type: 'group',
+                  plugin: 'eslint',
+                  slug: 'problems',
+                  weight: 4
+                },
+                {
+                  // 0 contribution
+                  type: 'group',
+                  plugin: 'eslint',
+                  slug: 'suggestions',
+                  weight: 1
+                }
+              ]
+            }
+          ],
+          plugins: [
+            {
+              slug: 'eslint',
+              groups: [
+                {
+                  slug: 'problems',
+                  // contributes 10%
+                  refs: [
+                    ...Array.from({ length: 9 }).map((_, i) => ({
+                      slug: `mock-rule-${i}`,
+                      weight: 1
+                    })),
+                    {
+                      slug: 'react-jsx-key',
+                      weight: 1
+                    }
+                  ]
+                },
+                {
+                  slug: 'suggestions',
+                  // 0 contribution
+                  refs: Array.from({ length: 10 }).map((_, i) => ({
+                    slug: `mock-rule-${10 + i}`,
+                    weight: 1
+                  }))
+                }
+              ]
+            },
+            {
+              slug: 'lighthouse',
+              groups: [
+                { slug: 'performance', refs: [] },
+                { slug: 'a11y', refs: [] }
+              ]
+            }
+          ]
+        } as Report
+      )
+    ).toBe(0.09) // 1% + 8% = 9%
   })
 })
