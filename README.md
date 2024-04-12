@@ -33,16 +33,22 @@ on:
     branches: [main]
 
 permissions:
+  contents: read
+  actions: read
   pull-requests: write
 
 jobs:
   code-pushup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-      - run: npm ci
-      - uses: code-pushup/github-action@v0
+      - name: Clone repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Code PushUp
+        uses: code-pushup/github-action@v0
 ```
 
 ## Action inputs
@@ -84,7 +90,7 @@ Example of using step outputs:
 ```yml
 - uses: code-pushup/github-action@v0
   id: code-pushup
-- run: |
+  run: |
     echo "Comment ID is ${{ steps.code-pushup.outputs.comment-id }}"
     echo "Artifact ID is ${{ steps.code-pushup.outputs.artifact-id }}"
 ```
