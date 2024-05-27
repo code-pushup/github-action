@@ -70,7 +70,7 @@ function getAuditIssues(
 ): SourceFileIssue[] {
   return (
     audit.details?.issues
-      .filter((issue): issue is Required<Issue> => issue.source?.file != null)
+      ?.filter((issue): issue is Required<Issue> => issue.source?.file != null)
       .map(issue => ({ ...issue, audit, plugin })) ?? []
   )
 }

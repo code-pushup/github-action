@@ -14,6 +14,7 @@ exports[`code-pushup action pull request event should compare reports 1`] = `
 |:--|:--|:--:|:--:|:--:|
 |TypeScript migration|Source files converted from JavaScript to TypeScript|🟩 **100% converted**|🟨 50% converted|![↑ +100 %](https://img.shields.io/badge/%E2%86%91%20%2B100%E2%80%89%25-green)|
 
+
 </details>
 "
 `;
