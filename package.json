@@ -72,10 +72,10 @@
     "simple-git": "^3.24.0"
   },
   "devDependencies": {
-    "@code-pushup/cli": "^0.44.4",
-    "@code-pushup/coverage-plugin": "^0.44.4",
-    "@code-pushup/eslint-plugin": "^0.44.4",
-    "@code-pushup/js-packages-plugin": "^0.44.4",
+    "@code-pushup/cli": "^0.45.0",
+    "@code-pushup/coverage-plugin": "^0.45.0",
+    "@code-pushup/eslint-plugin": "^0.45.0",
+    "@code-pushup/js-packages-plugin": "^0.45.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.14.0",
     "@typescript-eslint/eslint-plugin": "^7.11.0",
