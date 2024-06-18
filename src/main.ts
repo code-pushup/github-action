@@ -17,6 +17,7 @@ import { listChangedFiles } from './git'
 import { parseInputs } from './inputs'
 import { filterRelevantIssues } from './issues'
 import type { PersistedCliFiles } from './persist'
+import { printConfig } from './print-config'
 import { isPullRequest } from './pull-request'
 
 export async function run(
@@ -64,6 +65,18 @@ export async function run(
         await git.fetch('origin', base.ref, ['--depth=1'])
         await git.checkout(['-f', base.ref])
         core.debug(`Switched to base branch ${base.ref}`)
+
+        try {
+          await printConfig(inputs)
+          core.debug(
+            `Executing print-config verified code-pushup installed in base branch ${base.ref}`
+          )
+        } catch (err) {
+          core.debug(
+            `Executing print-config failed, assuming code-pushup not installed in base branch ${base.ref} and skipping comparison - ${err}`
+          )
+          return
+        }
 
         const { jsonFilePath: prevReportPath } = await collect(inputs)
         prevReport = await fs.readFile(prevReportPath, 'utf8')
