@@ -54,8 +54,8 @@ git tag -a "$new_tag" -m "$new_tag Release"
 echo -e "${GREEN}Tagged: $new_tag${OFF}"
 
 # Tag major version
-new_major_tag=$(echo $new_tag | sed 's/\(v[0-9]\+\).*/\1/')
-git tag -fa $new_major_tag -m "Update $new_major_tag tag"
+new_major_tag=${new_tag%%.*}
+git tag -fa "$new_major_tag" -m "Update $new_major_tag tag"
 echo -e "${GREEN}Tagged: $new_major_tag${OFF}"
 
 # Push the new tag to the remote
