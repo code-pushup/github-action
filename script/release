@@ -25,7 +25,7 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 
 # Get the latest release tag
-latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+latest_tag=$(git describe --tags --match='v*.*.*' "$(git rev-list --tags --max-count=1)")
 
 if [[ -z "$latest_tag" ]]; then
 	# There are no existing release tags
@@ -52,6 +52,11 @@ fi
 # Tag the new release
 git tag -a "$new_tag" -m "$new_tag Release"
 echo -e "${GREEN}Tagged: $new_tag${OFF}"
+
+# Tag major version
+new_major_tag=$(echo $new_tag | sed 's/\(v[0-9]\+\).*/\1/')
+git tag -fa $new_major_tag -m "Update $new_major_tag tag"
+echo -e "${GREEN}Tagged: $new_major_tag${OFF}"
 
 # Push the new tag to the remote
 git push --tags --force
