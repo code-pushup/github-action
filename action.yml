@@ -6,6 +6,33 @@ branding:
   color: blue
 
 inputs:
+  monorepo:
+    description: |
+      For repos containing multiple projects. Options are:
+
+      - `false`: single project mode (default)
+      - `true`: turns on monorepo mode (autodetects tool unless `projects` is specified)
+      - `nx`: Nx workspace
+      - `turbo`: Turborepo
+      - `npm`: NPM workspaces
+      - `yarn`: Yarn workspaces
+      - `pnpm`: PNPM workspaces
+    required: true
+    default: false
+  projects:
+    description: |
+      Project folders for custom monorepo setup.
+
+      Only used when `monorepo: true` is set and no known monorepo tool is detected.
+      Should be a comma-separated list of project folders (supports globs).
+    required: false
+  task:
+    description: |
+      Name of task for running Code PushUp CLI in monorepo mode. Defaults to `code-pushup`.
+
+      Dependending on what monorepo tool is being used, this task may represent a `package.json` script, binary executable, Nx target or Turbo task.
+    required: true
+    default: code-pushup
   bin:
     description: Custom code-pushup executable
     required: true
