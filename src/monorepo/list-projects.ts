@@ -1,4 +1,5 @@
 import { glob } from 'fast-glob'
+import { join } from 'node:path'
 import { detectMonorepoTool } from './detect-tool'
 import { getToolHandler } from './handlers'
 import type {
@@ -40,7 +41,7 @@ export async function listMonorepoProjects(inputs: {
     return directories.map(directory => ({
       name: directory,
       bin: inputs.bin,
-      directory
+      directory: join(options.cwd, directory)
     }))
   }
 

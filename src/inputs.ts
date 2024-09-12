@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import path from 'node:path'
-import { MONOREPO_TOOLS, type MonorepoTool } from './monorepo/tools'
+import { MONOREPO_TOOLS, type MonorepoTool } from './monorepo'
 
 export type ActionInputs = {
   monorepo: boolean | MonorepoTool

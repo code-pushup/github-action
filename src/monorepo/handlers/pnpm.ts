@@ -27,9 +27,9 @@ export const pnpmHandler: MonorepoToolHandler = {
     return packages
       .filter(
         ({ packageJson }) =>
-          !hasScript(packageJson, options.task) &&
-          !hasCodePushUpDependency(packageJson) &&
-          !hasCodePushUpDependency(rootPackageJson)
+          hasScript(packageJson, options.task) ||
+          hasCodePushUpDependency(packageJson) ||
+          hasCodePushUpDependency(rootPackageJson)
       )
       .map(({ name, packageJson }) => ({
         name,
