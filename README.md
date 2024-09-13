@@ -20,6 +20,8 @@ into your CI workflows.**
   branches, and creates/updates a PR comment which summarizes the impact of the
   changes.
   - ⚠️ Also annotates changed files with new issues encountered by Code PushUp.
+- 🏢 Supports monorepo setups - runs per project and summarizes comparisons in a
+  single PR comment.
 
 ## Workflow example
 
@@ -55,16 +57,19 @@ jobs:
 
 The action may be customized using the following optional inputs:
 
-| Name          | Description                                                              | Default                                                                                                |
-| :------------ | :----------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
-| `token`       | GitHub token for authorizing GitHub API requests                         | `${{ github.token }}`                                                                                  |
-| `annotations` | Toggles if annotations should be created for relevant Code PushUp issues | `true`                                                                                                 |
-| `artifacts`   | Toggles if artifacts will we uploaded/downloaded                         | `true`                                                                                                 |
-| `retention`   | Artifact retention period in days                                        | from repository settings                                                                               |
-| `directory`   | Directory in which `code-pushup` should run                              | `process.cwd()`                                                                                        |
-| `config`      | Path to config file (`--config` option)                                  | see [`@code-pushup/cli` docs](https://github.com/code-pushup/cli/tree/main/packages/cli#configuration) |
-| `silent`      | Toggles if logs from Code PushUp CLI are printed                         | `false`                                                                                                |
-| `bin`         | Command for executing Code PushUp CLI                                    | `npx --no-install code-pushup`                                                                         |
+| Name          | Description                                                                       | Default                                                                                                |
+| :------------ | :-------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| `monorepo`    | Enables [monorepo mode](#monorepo-mode)                                           | `false`                                                                                                |
+| `projects`    | Custom projects configuration for [monorepo mode](#monorepo-mode)                 | none                                                                                                   |
+| `task`        | Name of command to run Code PushUp per project in [monorepo mode](#monorepo-mode) | `code-pushup`                                                                                          |
+| `token`       | GitHub token for authorizing GitHub API requests                                  | `${{ github.token }}`                                                                                  |
+| `annotations` | Toggles if annotations should be created for relevant Code PushUp issues          | `true`                                                                                                 |
+| `artifacts`   | Toggles if artifacts will we uploaded/downloaded                                  | `true`                                                                                                 |
+| `retention`   | Artifact retention period in days                                                 | from repository settings                                                                               |
+| `directory`   | Directory in which `code-pushup` should run                                       | `process.cwd()`                                                                                        |
+| `config`      | Path to config file (`--config` option)                                           | see [`@code-pushup/cli` docs](https://github.com/code-pushup/cli/tree/main/packages/cli#configuration) |
+| `silent`      | Toggles if logs from Code PushUp CLI are printed                                  | `false`                                                                                                |
+| `bin`         | Command for executing Code PushUp CLI                                             | `npx --no-install code-pushup`                                                                         |
 
 For example, this will run `code-pushup` commands in a non-root folder and
 retain report artifacts for 30 days:
@@ -80,17 +85,68 @@ retain report artifacts for 30 days:
 
 Some outputs are set in case you want to add further steps to your workflow.
 
-| Name          | Description                                           |
-| :------------ | :---------------------------------------------------- |
-| `artifact-id` | ID of uploaded report artifact (N/A in monorepo mode) |
-| `comment-id`  | ID of created/updated PR comment                      |
+| Name          | Description                                                             |
+| :------------ | :---------------------------------------------------------------------- |
+| `artifact-id` | ID of uploaded report artifact (N/A in [monorepo mode](#monorepo-mode)) |
+| `comment-id`  | ID of created/updated PR comment                                        |
 
 Example of using step outputs:
 
 ```yml
 - uses: code-pushup/github-action@v0
   id: code-pushup
-  run: |
+- run: |
     echo "Comment ID is ${{ steps.code-pushup.outputs.comment-id }}"
     echo "Artifact ID is ${{ steps.code-pushup.outputs.artifact-id }}"
+```
+
+## Monorepo mode
+
+By default, the GitHub Action assumes your repository is a standalone project.
+But it also supports monorepo setups where reports are collected and compared
+individually per project. All project comparisons are then combined into a
+single PR comment.
+
+Use the `monorepo` input to active monorepo mode:
+
+```yml
+- uses: code-pushup/github-action@v0
+  with:
+    monorepo: true
+```
+
+The GitHub Action will try to detect which monorepo tool you're using from the
+file system. The following tools are supported out of the box:
+
+- [Nx](https://nx.dev/)
+- [Turborepo](https://turbo.build/)
+- [Yarn workspaces](https://classic.yarnpkg.com/lang/en/docs/workspaces/)
+- [PNPM workspace](https://pnpm.io/workspaces)
+- [npm workspaces](https://docs.npmjs.com/cli/using-npm/workspaces)
+
+If you're using one of these tools, you can also skip auto-detection by setting
+`monorepo` input to `nx`, `turbo`, `yarn`, `pnpm` or `npm`.
+
+If none of these tools are detected, then the fallback is to run Code PushUp in
+all folders which have a `package.json` file. If that's not what you want, then
+you can also configure folder patterns using the optional `projects` input
+(comma-separated globs):
+
+```yml
+- uses: code-pushup/github-action@v0
+  with:
+    monorepo: true
+    projects: 'frontend, backend/*'
+```
+
+Based on which monorepo tool is used, Code PushUp CLI commands will be executed
+using a `package.json` script, Nx target, Turbo task, or binary executable (as
+fallback). By default, these are expected to be called `code-pushup`, but you
+can override the name using the optional `task` input:
+
+```yml
+- uses: code-pushup/github-action@v0
+  with:
+    monorepo: nx
+    task: analyze # custom Nx target
 ```
