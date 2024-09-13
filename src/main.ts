@@ -152,7 +152,7 @@ async function runOnProject(
       return null
     }
 
-    const { jsonFilePath: prevReportPath } = await collect(inputs)
+    const { jsonFilePath: prevReportPath } = await collect(ctx)
     prevReport = await fs.readFile(prevReportPath, 'utf8')
     core.debug(`Collected previous report at ${prevReportPath}`)
 
