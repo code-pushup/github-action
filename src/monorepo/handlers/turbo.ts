@@ -24,10 +24,12 @@ export const turboHandler: MonorepoToolHandler = {
     for (const handler of WORKSPACE_HANDLERS) {
       if (await handler.isConfigured(options)) {
         const projects = await handler.listProjects(options)
-        return projects.map(({ name }) => ({
-          name,
-          bin: `npx turbo run ${options.task} -F ${name} --`
-        }))
+        return projects
+          .filter(({ bin }) => bin.includes(`run ${options.task}`)) // must be package.json script
+          .map(({ name }) => ({
+            name,
+            bin: `npx turbo run ${options.task} -F ${name} --`
+          }))
       }
     }
     throw new Error(
