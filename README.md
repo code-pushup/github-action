@@ -80,10 +80,10 @@ retain report artifacts for 30 days:
 
 Some outputs are set in case you want to add further steps to your workflow.
 
-| Name          | Description                      |
-| :------------ | :------------------------------- |
-| `artifact-id` | ID of uploaded report artifact   |
-| `comment-id`  | ID of created/updated PR comment |
+| Name          | Description                                           |
+| :------------ | :---------------------------------------------------- |
+| `artifact-id` | ID of uploaded report artifact (N/A in monorepo mode) |
+| `comment-id`  | ID of created/updated PR comment                      |
 
 Example of using step outputs:
 
