@@ -71,7 +71,7 @@ describe('monorepo projects detection', () => {
     ])
   })
 
-  it('should detect projects in Turborepo', async () => {
+  it('should detect projects in Turborepo which have code-pushup command', async () => {
     vol.fromJSON(
       {
         'package.json': pkgJsonContent({
@@ -95,6 +95,9 @@ describe('monorepo projects detection', () => {
         'backend/auth/package.json': pkgJsonContent({
           name: 'auth',
           scripts: { 'code-pushup': 'code-pushup --no-progress' }
+        }),
+        'e2e/package.json': pkgJsonContent({
+          name: 'e2e'
         }),
         'frontend/backoffice/package.json': pkgJsonContent({
           name: 'backoffice',
