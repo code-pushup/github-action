@@ -34,11 +34,11 @@ export async function run(
     let commentMdPath: string | undefined
 
     if (inputs.monorepo) {
-      core.debug('Running Code PushUp in monorepo mode')
+      core.info('Running Code PushUp in monorepo mode')
       const projects = await listMonorepoProjects(inputs)
       const diffJsonPaths: string[] = []
       for (const project of projects) {
-        core.debug(`Running Code PushUp on monorepo project ${project.name}`)
+        core.info(`Running Code PushUp on monorepo project ${project.name}`)
         const comparisonFiles = await runOnProject(
           project,
           inputs,
@@ -67,7 +67,7 @@ export async function run(
         core.debug(`Uploaded report diff artifact (${size} bytes)`)
       }
     } else {
-      core.debug('Running Code PushUp in standalone project mode')
+      core.info('Running Code PushUp in standalone project mode')
       const comparisonFiles = await runOnProject(null, inputs, artifact, git)
       if (comparisonFiles) {
         commentMdPath = comparisonFiles.mdFilePath
@@ -77,7 +77,7 @@ export async function run(
     if (commentMdPath) {
       const commentId = await commentOnPR(commentMdPath, inputs)
       core.setOutput('comment-id', commentId)
-      core.debug(`Commented on PR #${github.context.issue.number}`)
+      core.info(`Commented on PR #${github.context.issue.number}`)
     }
   } catch (error) {
     core.setFailed(error instanceof Error ? error.message : `${error}`)
@@ -115,16 +115,21 @@ async function runOnProject(
   }
 
   const { base } = github.context.payload.pull_request
-  core.debug(`PR detected, preparing to compare base branch ${base.ref}`)
+  core.info(`PR detected, preparing to compare base branch ${base.ref}`)
 
   let prevReport: string
 
   let cachedBaseReport: PersistedCliFiles | null = null
   if (inputs.artifacts) {
     cachedBaseReport = await downloadReportArtifact(artifact, base, inputs)
-    core.debug(
-      `Previous report artifact ${cachedBaseReport ? `found and downloaded to ${cachedBaseReport.jsonFilePath}` : `not found`}`
+    core.info(
+      `Previous report artifact ${cachedBaseReport ? 'found' : 'not found'}`
     )
+    if (cachedBaseReport) {
+      core.debug(
+        `Previous report artifact downloaded to ${cachedBaseReport.jsonFilePath}`
+      )
+    }
   }
 
   if (cachedBaseReport) {
@@ -132,16 +137,17 @@ async function runOnProject(
   } else {
     await git.fetch('origin', base.ref, ['--depth=1'])
     await git.checkout(['-f', base.ref])
-    core.debug(`Switched to base branch ${base.ref}`)
+    core.info(`Switched to base branch ${base.ref}`)
 
     try {
-      await printConfig(ctx)
+      await printConfig({ ...ctx, silent: !core.isDebug() })
       core.debug(
         `Executing print-config verified code-pushup installed in base branch ${base.ref}`
       )
     } catch (err) {
-      core.debug(
-        `Executing print-config failed, assuming code-pushup not installed in base branch ${base.ref} and skipping comparison - ${err}`
+      core.debug(`Error from print-config - ${err}`)
+      core.info(
+        `Executing print-config failed, assuming code-pushup not installed in base branch ${base.ref} and skipping comparison`
       )
       return null
     }
@@ -151,7 +157,7 @@ async function runOnProject(
     core.debug(`Collected previous report at ${prevReportPath}`)
 
     await git.checkout(['-f', '-'])
-    core.debug('Switched back to current branch')
+    core.info('Switched back to PR branch')
   }
 
   const reportsDir = path.join(inputs.directory, '.code-pushup')
@@ -165,8 +171,9 @@ async function runOnProject(
     { before: prevPath, after: currPath, label: project?.name },
     ctx
   )
+  core.info('Compared reports and generated diff files')
   core.debug(
-    `Compared reports and generated diff at ${comparisonFiles.jsonFilePath} and ${comparisonFiles.mdFilePath}`
+    `Generated diff files at ${comparisonFiles.jsonFilePath} and ${comparisonFiles.mdFilePath}`
   )
 
   if (inputs.annotations) {

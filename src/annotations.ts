@@ -2,6 +2,10 @@ import * as core from '@actions/core'
 import type { SourceFileIssue } from './issues'
 
 export function createAnnotationsFromIssues(issues: SourceFileIssue[]): void {
+  if (issues.length > 0) {
+    core.info(`Creating annotations for ${issues.length} issues:`)
+  }
+
   for (const issue of issues) {
     const message = issue.message
     const properties: core.AnnotationProperties = {
