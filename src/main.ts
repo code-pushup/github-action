@@ -13,9 +13,9 @@ import {
 import {
   collect,
   compare,
+  createCommandContext,
   mergeDiffs,
   printConfig,
-  type CommandContext,
   type PersistedCliFiles
 } from './cli'
 import { commentOnPR } from './comment'
@@ -52,7 +52,7 @@ export async function run(
       if (diffJsonPaths.length > 0) {
         const { mdFilePath, artifactData } = await mergeDiffs(
           diffJsonPaths,
-          inputs
+          createCommandContext(inputs, projects[0])
         )
         core.debug(`Merged ${diffJsonPaths.length} diffs into ${mdFilePath}`)
         commentMdPath = mdFilePath
@@ -90,13 +90,7 @@ async function runOnProject(
   artifact: DefaultArtifactClient,
   git: SimpleGit
 ): Promise<PersistedCliFiles | null> {
-  const ctx: CommandContext = {
-    project: project?.name,
-    bin: project?.bin ?? inputs.bin,
-    directory: project?.directory ?? inputs.directory,
-    config: inputs.config,
-    silent: inputs.silent
-  }
+  const ctx = createCommandContext(inputs, project)
 
   const { jsonFilePath: currReportPath, artifactData: reportArtifact } =
     await collect(ctx)
