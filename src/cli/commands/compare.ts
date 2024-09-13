@@ -24,7 +24,7 @@ export async function compare(
       `--after=${after}`,
       ...(label ? [`--label=${label}`] : []),
       ...(config ? [`--config=${config}`] : []),
-      ...persistCliOptions(project)
+      ...persistCliOptions({ directory, project })
     ],
     { cwd: directory, silent }
   )

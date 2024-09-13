@@ -16,7 +16,7 @@ export async function mergeDiffs(
       'merge-diffs',
       ...files.map(file => `--files=${file}`),
       ...(config ? [`--config=${config}`] : []),
-      ...persistCliOptions()
+      ...persistCliOptions({ directory })
     ],
     { cwd: directory, silent }
   )
