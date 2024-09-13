@@ -34,7 +34,7 @@ export const pnpmHandler: MonorepoToolHandler = {
       .map(({ name, packageJson }) => ({
         name,
         bin: hasScript(packageJson, options.task)
-          ? `pnpm run ${options.task} -F ${name}`
+          ? `pnpm -F ${name} run ${options.task}`
           : `pnpm -F ${name} exec ${options.task}`
       }))
   }
