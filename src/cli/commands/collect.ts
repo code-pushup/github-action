@@ -15,7 +15,10 @@ export async function collect({
 }: CommandContext): Promise<PersistedCliFiles> {
   await exec(
     bin,
-    [...(config ? [`--config=${config}`] : []), ...persistCliOptions(project)],
+    [
+      ...(config ? [`--config=${config}`] : []),
+      ...persistCliOptions({ directory, project })
+    ],
     { cwd: directory, silent }
   )
 

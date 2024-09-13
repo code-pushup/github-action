@@ -15,9 +15,15 @@ export type PersistedCliFiles<T extends PersistFormat = PersistFormat> = {
   }
 }
 
-export function persistCliOptions(project?: string): string[] {
+export function persistCliOptions({
+  directory,
+  project
+}: {
+  directory: string
+  project?: string
+}): string[] {
   return [
-    `--persist.outputDir=${PERSIST_OUTPUT_DIR}`,
+    `--persist.outputDir=${path.join(directory, PERSIST_OUTPUT_DIR)}`,
     `--persist.filename=${createFilename(project)}`,
     ...PERSIST_FORMAT.map(format => `--persist.format=${format}`)
   ]
