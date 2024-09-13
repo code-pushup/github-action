@@ -26,7 +26,7 @@ export const turboHandler: MonorepoToolHandler = {
         const projects = await handler.listProjects(options)
         return projects.map(({ name }) => ({
           name,
-          bin: `npx turbo run ${options.task} -F ${name}`
+          bin: `npx turbo run ${options.task} -F ${name} --`
         }))
       }
     }

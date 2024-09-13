@@ -28,8 +28,8 @@ export const npmHandler: MonorepoToolHandler = {
       .map(({ name, packageJson }) => ({
         name,
         bin: hasScript(packageJson, options.task)
-          ? `npm -w ${name} run ${options.task}`
-          : `npm -w ${name} exec ${options.task}`
+          ? `npm -w ${name} run ${options.task} --`
+          : `npm -w ${name} exec ${options.task} --`
       }))
   }
 }

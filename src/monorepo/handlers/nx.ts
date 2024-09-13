@@ -22,7 +22,7 @@ export const nxHandler: MonorepoToolHandler = {
     const projects = parseProjects(stdout)
     return projects.map(project => ({
       name: project,
-      bin: `npx nx run ${project}:${options.task}`
+      bin: `npx nx run ${project}:${options.task} --`
     }))
   }
 }

@@ -66,8 +66,8 @@ describe('monorepo projects detection', () => {
     await expect(listMonorepoProjects(DEFAULT_INPUTS)).resolves.toEqual<
       ProjectConfig[]
     >([
-      { name: 'backend', bin: 'npx nx run backend:code-pushup' },
-      { name: 'frontend', bin: 'npx nx run frontend:code-pushup' }
+      { name: 'backend', bin: 'npx nx run backend:code-pushup --' },
+      { name: 'frontend', bin: 'npx nx run frontend:code-pushup --' }
     ])
   })
 
@@ -111,10 +111,10 @@ describe('monorepo projects detection', () => {
     await expect(listMonorepoProjects(DEFAULT_INPUTS)).resolves.toEqual<
       ProjectConfig[]
     >([
-      { name: 'backoffice', bin: 'npx turbo run code-pushup -F backoffice' },
-      { name: 'website', bin: 'npx turbo run code-pushup -F website' },
-      { name: 'api', bin: 'npx turbo run code-pushup -F api' },
-      { name: 'auth', bin: 'npx turbo run code-pushup -F auth' }
+      { name: 'backoffice', bin: 'npx turbo run code-pushup -F backoffice --' },
+      { name: 'website', bin: 'npx turbo run code-pushup -F website --' },
+      { name: 'api', bin: 'npx turbo run code-pushup -F api --' },
+      { name: 'auth', bin: 'npx turbo run code-pushup -F auth --' }
     ])
   })
 
@@ -145,9 +145,9 @@ describe('monorepo projects detection', () => {
     await expect(listMonorepoProjects(DEFAULT_INPUTS)).resolves.toEqual<
       ProjectConfig[]
     >([
-      { name: 'backend', bin: 'pnpm run code-pushup -F backend' },
-      { name: 'frontend', bin: 'pnpm run code-pushup -F frontend' },
-      { name: '@repo/utils', bin: 'pnpm run code-pushup -F @repo/utils' }
+      { name: 'backend', bin: 'pnpm -F backend run code-pushup' },
+      { name: 'frontend', bin: 'pnpm -F frontend run code-pushup' },
+      { name: '@repo/utils', bin: 'pnpm -F @repo/utils run code-pushup' }
     ])
   })
 
@@ -204,8 +204,8 @@ describe('monorepo projects detection', () => {
     await expect(listMonorepoProjects(DEFAULT_INPUTS)).resolves.toEqual<
       ProjectConfig[]
     >([
-      { name: 'backend', bin: 'npm -w backend exec code-pushup' },
-      { name: 'frontend', bin: 'npm -w frontend exec code-pushup' }
+      { name: 'backend', bin: 'npm -w backend exec code-pushup --' },
+      { name: 'frontend', bin: 'npm -w frontend exec code-pushup --' }
     ])
   })
 
