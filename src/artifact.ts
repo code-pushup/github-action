@@ -6,13 +6,32 @@ import {
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import fs from 'node:fs/promises'
+import {
+  findPersistedFiles,
+  projectToFilename,
+  type PersistedCliFiles
+} from './cli'
 import type { ActionInputs } from './inputs'
-import { findPersistedFiles, type PersistedCliFiles } from './persist'
 
-export const REPORT_ARTIFACT_NAME = 'code-pushup-report'
-export const DIFF_ARTIFACT_NAME = 'code-pushup-report-diff'
-
+const REPORT_ARTIFACT_NAME = 'code-pushup-report'
+const DIFF_ARTIFACT_NAME = 'code-pushup-report-diff'
 const ARTIFACT_DIR = 'tmp'
+
+export function createReportArtifactName(project?: string): string {
+  return createArtifactName(REPORT_ARTIFACT_NAME, project)
+}
+
+export function createDiffArtifactName(project?: string): string {
+  return createArtifactName(DIFF_ARTIFACT_NAME, project)
+}
+
+function createArtifactName(base: string, project: string | undefined): string {
+  if (!project) {
+    return base
+  }
+  const suffix = projectToFilename(project)
+  return `${base}-${suffix}`
+}
 
 export async function downloadReportArtifact(
   artifact: ArtifactClient,

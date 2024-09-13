@@ -1,22 +1,21 @@
 import { glob } from 'fast-glob'
 import { join } from 'node:path'
+import type { ActionInputs } from '../inputs'
 import { detectMonorepoTool } from './detect-tool'
 import { getToolHandler } from './handlers'
-import type {
-  MonorepoHandlerOptions,
-  MonorepoTool,
-  ProjectConfig
-} from './tools'
+import type { MonorepoHandlerOptions, ProjectConfig } from './tools'
 import { listPackages } from './utils/packages'
 
-export async function listMonorepoProjects(inputs: {
-  monorepo: MonorepoTool | true
-  projects: string[] | null
-  task: string
-  directory: string
-  silent: boolean
-  bin: string
-}): Promise<ProjectConfig[]> {
+export async function listMonorepoProjects(
+  inputs: Pick<
+    ActionInputs,
+    'monorepo' | 'projects' | 'task' | 'bin' | 'directory' | 'silent'
+  >
+): Promise<ProjectConfig[]> {
+  if (!inputs.monorepo) {
+    throw new Error('Monorepo mode not enabled')
+  }
+
   const options: MonorepoHandlerOptions = {
     task: inputs.task,
     cwd: inputs.directory,
