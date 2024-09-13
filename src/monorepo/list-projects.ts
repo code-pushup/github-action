@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import { glob } from 'fast-glob'
 import { join } from 'node:path'
 import type { ActionInputs } from '../inputs'
@@ -26,10 +27,22 @@ export async function listMonorepoProjects(
     inputs.monorepo === true
       ? await detectMonorepoTool(options)
       : inputs.monorepo
+  if (inputs.monorepo === true) {
+    if (tool) {
+      core.info(`Auto-detected monorepo tool ${tool}`)
+    } else {
+      core.info("Couldn't auto-detect any supported monorepo tool")
+    }
+  } else {
+    core.info(`Using monorepo tool "${tool}" from inputs`)
+  }
 
   if (tool) {
     const handler = getToolHandler(tool)
-    return handler.listProjects(options)
+    const projects = await handler.listProjects(options)
+    core.info(`Found ${projects.length} projects in ${tool} monorepo`)
+    core.debug(`Projects: ${projects.map(({ name }) => name).join(', ')}`)
+    return projects
   }
 
   if (inputs.projects) {
@@ -37,6 +50,10 @@ export async function listMonorepoProjects(
       cwd: options.cwd,
       onlyDirectories: true
     })
+    core.info(
+      `Found ${directories.length} project folders matching "${inputs.projects}" from inputs`
+    )
+    core.debug(`Projects: ${directories.join(', ')}`)
     return directories.map(directory => ({
       name: directory,
       bin: inputs.bin,
@@ -45,6 +62,8 @@ export async function listMonorepoProjects(
   }
 
   const packages = await listPackages(options.cwd)
+  core.info(`Found ${packages.length} NPM packages in repository`)
+  core.debug(`Projects: ${packages.map(({ name }) => name).join(', ')}`)
   return packages.map(({ name, directory }) => ({
     name,
     bin: inputs.bin,

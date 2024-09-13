@@ -4,6 +4,8 @@ import type { PackageJson } from 'type-fest'
 import type { ActionInputs } from '../src/inputs'
 import { listMonorepoProjects, type ProjectConfig } from '../src/monorepo'
 
+jest.mock('@actions/core')
+
 jest.mock('fs', () => {
   const memfs: typeof import('memfs') = jest.requireActual('memfs')
   return memfs.fs
