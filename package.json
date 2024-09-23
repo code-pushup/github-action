@@ -71,7 +71,7 @@
     "@actions/github": "^6.0.0",
     "better-enums": "^0.2.2",
     "fast-glob": "^3.3.2",
-    "simple-git": "^3.26.0",
+    "simple-git": "^3.27.0",
     "yaml": "^2.5.1"
   },
   "devDependencies": {
