@@ -1,5 +1,5 @@
+import type { Report } from '@code-pushup/models'
 import { getAuditImpactValue, issuesMatch } from '../src/issues'
-import type { Report } from '../src/models'
 
 describe('issues comparison', () => {
   it('should match issues with exact same metadata', () => {
