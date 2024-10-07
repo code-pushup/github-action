@@ -1,9 +1,3 @@
-import {
-  adjustFileName,
-  adjustLine,
-  isFileChanged,
-  type ChangedFiles
-} from './git'
 import type {
   Audit,
   AuditReport,
@@ -11,7 +5,13 @@ import type {
   PluginMeta,
   Report,
   ReportsDiff
-} from './models'
+} from '@code-pushup/models'
+import {
+  adjustFileName,
+  adjustLine,
+  isFileChanged,
+  type ChangedFiles
+} from './git'
 
 export type SourceFileIssue = Required<Issue> & IssueContext
 

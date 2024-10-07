@@ -16,6 +16,7 @@
     "actions",
     "code-pushup"
   ],
+  "type": "module",
   "exports": {
     ".": "./dist/index.js"
   },
