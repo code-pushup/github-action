@@ -73,7 +73,7 @@
     "better-enums": "^0.2.2",
     "fast-glob": "^3.3.2",
     "simple-git": "^3.27.0",
-    "yaml": "^2.5.1"
+    "yaml": "^2.6.0"
   },
   "devDependencies": {
     "@code-pushup/cli": "^0.51.0",
