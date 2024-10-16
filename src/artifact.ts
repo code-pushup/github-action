@@ -3,14 +3,13 @@ import {
   type ArtifactClient,
   type FindOptions
 } from '@actions/artifact'
-import * as core from '@actions/core'
-import * as github from '@actions/github'
-import fs from 'node:fs/promises'
-import {
-  findPersistedFiles,
-  projectToFilename,
-  type PersistedCliFiles
-} from './cli'
+import core from '@actions/core'
+import github from '@actions/github'
+import type { ArtifactData, GitBranch } from '@code-pushup/ci'
+import { DEFAULT_PERSIST_FILENAME } from '@code-pushup/models'
+import { projectToFilename } from '@code-pushup/utils'
+import { readdir, rm } from 'node:fs/promises'
+import { join } from 'node:path'
 import type { ActionInputs } from './inputs'
 
 const REPORT_ARTIFACT_NAME = 'code-pushup-report'
@@ -33,11 +32,27 @@ function createArtifactName(base: string, project: string | undefined): string {
   return `${base}-${suffix}`
 }
 
+export async function uploadArtifact(
+  artifact: ArtifactClient,
+  name: string,
+  data: ArtifactData,
+  inputs: Pick<ActionInputs, 'retention'>
+): Promise<number | undefined> {
+  const { id, size } = await artifact.uploadArtifact(
+    name,
+    data.files,
+    data.rootDir,
+    inputs.retention != null ? { retentionDays: inputs.retention } : undefined
+  )
+  core.debug(`Uploaded ${name} artifact (${size} bytes)`)
+  return id
+}
+
 export async function downloadReportArtifact(
   artifact: ArtifactClient,
-  branch: { ref: string; sha: string },
-  { token }: ActionInputs
-): Promise<PersistedCliFiles | null> {
+  branch: GitBranch,
+  token: string
+): Promise<string | null> {
   const octokit = github.getOctokit(token)
 
   const {
@@ -87,7 +102,7 @@ export async function downloadReportArtifact(
       `Found ${reportArtifact.name} artifact with ID ${reportArtifact.id} in workflow run ${workflowRun.id}`
     )
 
-    await fs.rm(ARTIFACT_DIR, { recursive: true, force: true })
+    await rm(ARTIFACT_DIR, { recursive: true, force: true })
     const { downloadPath } = await artifact.downloadArtifact(
       reportArtifact.id,
       { findBy, path: ARTIFACT_DIR }
@@ -95,12 +110,18 @@ export async function downloadReportArtifact(
     if (!downloadPath) {
       throw new Error('Unexpected empty downloadPath')
     }
-    const files = await fs.readdir(downloadPath)
+    const files = await readdir(downloadPath)
     core.debug(
       `Downloaded artifact to ${downloadPath}, contains files: ${files.join(', ')}`
     )
 
-    return findPersistedFiles(downloadPath, files)
+    const reportJsonFile = `${DEFAULT_PERSIST_FILENAME}.json`
+    if (!files.includes(reportJsonFile)) {
+      core.warning(`Downloaded artifact doesn't contain ${reportJsonFile}`)
+      return null
+    }
+
+    return join(downloadPath, reportJsonFile)
   } catch (err) {
     if (err instanceof ArtifactNotFoundError) {
       core.info(
