@@ -1,7 +1,8 @@
 import type { ArtifactClient, UploadArtifactResponse } from '@actions/artifact'
-import * as core from '@actions/core'
-import * as github from '@actions/github'
+import core from '@actions/core'
+import github from '@actions/github'
 import type { Context } from '@actions/github/lib/context'
+import { jest } from '@jest/globals'
 import type { components } from '@octokit/openapi-types'
 import type { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods'
 import {
@@ -12,13 +13,16 @@ import {
   rm,
   writeFile
 } from 'node:fs/promises'
-import { join } from 'node:path'
-import { simpleGit, type DiffResult, type SimpleGit } from 'simple-git'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import {
+  simpleGit,
+  type DiffResult,
+  type FetchResult,
+  type SimpleGit
+} from 'simple-git'
 import type { ActionInputs } from '../src/inputs'
 import { run } from '../src/main'
-
-jest.mock('@actions/core')
-jest.mock('@actions/github')
 
 describe('code-pushup action', () => {
   const workDir = join('tmp', 'git-repo')
@@ -26,16 +30,19 @@ describe('code-pushup action', () => {
   let git: SimpleGit
   let artifact: ArtifactClient
 
-  let cwdSpy: jest.SpiedFunction<typeof process.cwd>
-
   beforeEach(async () => {
     jest.clearAllMocks()
 
-    cwdSpy = jest.spyOn(process, 'cwd').mockReturnValue(workDir)
+    jest.spyOn(process, 'cwd').mockReturnValue(workDir)
 
-    // uncomment to see debug logs
-    // jest.spyOn(core, 'debug').mockImplementation(console.debug)
-    // jest.spyOn(core, 'isDebug').mockReturnValue(true)
+    jest.spyOn(core, 'setOutput').mockReturnValue()
+    jest.spyOn(core, 'setFailed').mockReturnValue()
+    jest.spyOn(core, 'error').mockReturnValue()
+    jest.spyOn(core, 'warning').mockReturnValue()
+    jest.spyOn(core, 'notice').mockReturnValue()
+    jest.spyOn(core, 'info').mockReturnValue()
+    jest.spyOn(core, 'debug').mockReturnValue()
+    jest.spyOn(core, 'isDebug').mockReturnValue(false)
 
     jest.spyOn(core, 'getInput').mockImplementation((name: string): string => {
       switch (name as keyof ActionInputs) {
@@ -111,22 +118,26 @@ describe('code-pushup action', () => {
     jest.spyOn(github, 'getOctokit').mockReturnValue(mockOctokit)
 
     artifact = {
-      uploadArtifact: jest.fn().mockResolvedValue({
-        id: 123
-      } as UploadArtifactResponse) as ArtifactClient['uploadArtifact']
-    } as ArtifactClient
+      uploadArtifact: jest
+        .fn<ArtifactClient['uploadArtifact']>()
+        .mockResolvedValue({ id: 123 } as UploadArtifactResponse)
+    } as Partial<ArtifactClient> as ArtifactClient
 
     await rm(workDir, { recursive: true, force: true })
     await mkdir(workDir, { recursive: true })
     await copyFile(
-      join(__dirname, 'fixtures', 'code-pushup.config.ts'),
+      join(
+        fileURLToPath(dirname(import.meta.url)),
+        'fixtures',
+        'code-pushup.config.ts'
+      ),
       join(workDir, 'code-pushup.config.ts')
     )
     await writeFile(join(workDir, 'index.js'), 'console.log("Hello, world!")')
 
     git = simpleGit(workDir)
 
-    jest.spyOn(git, 'fetch').mockImplementation()
+    jest.spyOn(git, 'fetch').mockResolvedValue({} as FetchResult)
     jest.spyOn(git, 'diffSummary').mockResolvedValue({
       files: [{ file: 'index.ts', binary: false }]
     } as DiffResult)
@@ -140,11 +151,12 @@ describe('code-pushup action', () => {
     await git.add('index.js')
     await git.add('code-pushup.config.ts')
     await git.commit('Initial commit')
+
+    github.context.ref = 'refs/heads/main'
+    github.context.sha = await git.revparse('main')
   })
 
   afterAll(async () => {
-    cwdSpy.mockRestore()
-
     await rm(workDir, { recursive: true, force: true })
   })
 
