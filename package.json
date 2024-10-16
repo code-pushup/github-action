@@ -25,14 +25,14 @@
   },
   "scripts": {
     "bundle": "npm run format:write && npm run package",
-    "ci-test": "npx jest",
+    "ci-test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "coverage": "npx make-coverage-badge --output-path ./badges/coverage.svg",
     "format:write": "npx prettier --write .",
     "format:check": "npx prettier --check .",
     "lint": "npx eslint . -c ./.github/linters/.eslintrc.yml",
     "package": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt",
     "package:watch": "npm run package -- --watch",
-    "test": "npx jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
   },
   "license": "MIT",
@@ -53,8 +53,19 @@
       "/dist/"
     ],
     "transform": {
-      "^.+\\.ts$": "ts-jest"
+      "^.+\\.ts$": [
+        "ts-jest",
+        {
+          "useESM": true
+        }
+      ]
     },
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
     "coverageReporters": [
       "json-summary",
       "text",
@@ -83,6 +94,7 @@
     "@code-pushup/coverage-plugin": "^0.52.0",
     "@code-pushup/eslint-plugin": "^0.52.0",
     "@code-pushup/js-packages-plugin": "^0.52.0",
+    "@code-pushup/portal-client": "^0.9.0",
     "@types/jest": "^29.5.13",
     "@types/node": "^22.7.5",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
