@@ -1,9 +1,12 @@
-import * as core from '@actions/core'
-import path from 'node:path'
-import { MONOREPO_TOOLS, type MonorepoTool } from './monorepo'
+import core from '@actions/core'
+import type { Settings } from '@code-pushup/ci'
+import { resolve } from 'node:path'
+
+type MonorepoInput = Settings['monorepo']
+type MonorepoTool = Exclude<MonorepoInput, boolean>
 
 export type ActionInputs = {
-  monorepo: boolean | MonorepoTool
+  monorepo: MonorepoInput
   projects: string[] | null
   task: string
   token: string
@@ -22,7 +25,7 @@ export function parseInputs(): ActionInputs {
   const task = core.getInput('task')
   const token = core.getInput('token')
   const config = core.getInput('config') || null
-  const directory = path.resolve(core.getInput('directory') || process.cwd())
+  const directory = resolve(core.getInput('directory') || process.cwd())
   const bin = core.getInput('bin')
   const silent = core.getBooleanInput('silent')
   const artifacts = core.getBooleanInput('artifacts')
@@ -52,18 +55,29 @@ function parseInteger(value: string): number | null {
   return int
 }
 
-function parseMonorepoInput(value: string): boolean | MonorepoTool {
+function parseMonorepoInput(value: string): Settings['monorepo'] {
   if (!value || ['false', 'False', 'FALSE'].includes(value)) {
     return false
   }
   if (['true', 'True', 'TRUE'].includes(value)) {
     return true
   }
-  if (MONOREPO_TOOLS.hasValue(value)) {
-    return value
+
+  const tools = Object.values({
+    npm: 'npm',
+    nx: 'nx',
+    pnpm: 'pnpm',
+    turbo: 'turbo',
+    yarn: 'yarn'
+  } satisfies { [T in MonorepoTool]: T })
+
+  for (const tool of tools) {
+    if (value === tool) {
+      return value
+    }
   }
   throw new Error(
-    `Invalid value for monorepo input, expected boolean or one of ${MONOREPO_TOOLS.values().join('/')}`
+    `Invalid value for monorepo input, expected boolean or one of ${tools.join('/')}`
   )
 }
 
