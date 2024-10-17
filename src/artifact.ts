@@ -3,8 +3,8 @@ import {
   type ArtifactClient,
   type FindOptions
 } from '@actions/artifact'
-import core from '@actions/core'
-import github from '@actions/github'
+import * as core from '@actions/core'
+import * as github from '@actions/github'
 import type { ArtifactData, GitBranch } from '@code-pushup/ci'
 import { DEFAULT_PERSIST_FILENAME } from '@code-pushup/models'
 import { projectToFilename } from '@code-pushup/utils'

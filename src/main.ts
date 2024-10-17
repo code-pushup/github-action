@@ -1,6 +1,6 @@
 import { DefaultArtifactClient } from '@actions/artifact'
-import core from '@actions/core'
-import github from '@actions/github'
+import * as core from '@actions/core'
+import * as github from '@actions/github'
 import { runInCI } from '@code-pushup/ci'
 import { simpleGit } from 'simple-git'
 import { createAnnotationsFromIssues } from './annotations'
