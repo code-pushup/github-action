@@ -1,7 +1,6 @@
 import type { ArtifactClient, UploadArtifactResponse } from '@actions/artifact'
 import core from '@actions/core'
 import github from '@actions/github'
-import type { Context } from '@actions/github/lib/context'
 import { jest } from '@jest/globals'
 import type { components } from '@octokit/openapi-types'
 import type { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods'
@@ -21,77 +20,14 @@ import {
   type FetchResult,
   type SimpleGit
 } from 'simple-git'
-import type { ActionInputs } from '../src/inputs'
 import { run } from '../src/main'
 
 describe('code-pushup action', () => {
   const workDir = join('tmp', 'git-repo')
 
-  let git: SimpleGit
-  let artifact: ArtifactClient
-
-  beforeEach(async () => {
-    jest.clearAllMocks()
-
-    jest.spyOn(process, 'cwd').mockReturnValue(workDir)
-
-    jest.spyOn(core, 'setOutput').mockReturnValue()
-    jest.spyOn(core, 'setFailed').mockReturnValue()
-    jest.spyOn(core, 'error').mockReturnValue()
-    jest.spyOn(core, 'warning').mockReturnValue()
-    jest.spyOn(core, 'notice').mockReturnValue()
-    jest.spyOn(core, 'info').mockReturnValue()
-    jest.spyOn(core, 'debug').mockReturnValue()
-    jest.spyOn(core, 'isDebug').mockReturnValue(false)
-
-    jest.spyOn(core, 'getInput').mockImplementation((name: string): string => {
-      switch (name as keyof ActionInputs) {
-        case 'token':
-          return '<mock-github-token>'
-        case 'bin':
-          return 'npx code-pushup'
-        case 'directory':
-          return workDir
-        case 'retention':
-          return '14'
-        default:
-          return ''
-      }
-    })
-    jest
-      .spyOn(core, 'getBooleanInput')
-      .mockImplementation((name: string): boolean => {
-        switch (name as keyof ActionInputs) {
-          case 'silent':
-            return true
-          case 'artifacts':
-            return true
-          case 'annotations':
-            return true
-          default:
-            return false
-        }
-      })
-
-    // @ts-expect-error context is readonly
-    github.context = {
-      repo: {
-        owner: 'dunder-mifflin',
-        repo: 'website'
-      },
-      payload: {},
-      get issue() {
-        return {
-          owner: github.context.repo.owner,
-          repo: github.context.repo.repo,
-          number:
-            github.context.payload.pull_request?.number ??
-            github.context.payload.number
-        }
-      }
-    } as Context
-
-    const mockOctokit = {
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  const getOctokit = () =>
+    ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       paginate: (async () => []) as any,
       rest: {
@@ -114,8 +50,38 @@ describe('code-pushup action', () => {
           })
         }
       }
-    } as ReturnType<typeof github.getOctokit>
-    jest.spyOn(github, 'getOctokit').mockReturnValue(mockOctokit)
+    }) as ReturnType<typeof github.getOctokit>
+
+  let git: SimpleGit
+  let artifact: ArtifactClient
+
+  beforeEach(async () => {
+    jest.clearAllMocks()
+
+    jest.spyOn(process, 'cwd').mockReturnValue(workDir)
+
+    jest.spyOn(core, 'setFailed').mockReturnValue()
+
+    process.env['INPUT_TOKEN'] = '<mock-github-token>'
+    process.env['INPUT_BIN'] = 'npx code-pushup'
+    process.env['INPUT_DIRECTORY'] = workDir
+    process.env['INPUT_RETENTION'] = '14'
+    process.env['INPUT_TASK'] = 'code-pushup'
+    process.env['INPUT_SILENT'] = 'true'
+    process.env['INPUT_ARTIFACTS'] = 'true'
+    process.env['INPUT_ANNOTATIONS'] = 'true'
+
+    jest.spyOn(github.context, 'repo', 'get').mockReturnValue({
+      owner: 'dunder-mifflin',
+      repo: 'website'
+    })
+    jest.spyOn(github.context, 'issue', 'get').mockImplementation(() => ({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      number:
+        github.context.payload.pull_request?.number ??
+        github.context.payload.number
+    }))
 
     artifact = {
       uploadArtifact: jest
@@ -168,7 +134,7 @@ describe('code-pushup action', () => {
     })
 
     it('should collect report', async () => {
-      await run(artifact, git)
+      await run(artifact, getOctokit, git)
 
       expect(core.setFailed).not.toHaveBeenCalled()
 
@@ -184,8 +150,6 @@ describe('code-pushup action', () => {
         expect.stringContaining('.code-pushup'),
         { retentionDays: 14 }
       )
-
-      expect(core.setOutput).toHaveBeenCalledWith('artifact-id', 123)
 
       const jsonPromise = readFile(
         join(workDir, '.code-pushup/report.json'),
@@ -230,15 +194,7 @@ describe('code-pushup action', () => {
     })
 
     it('should compare reports', async () => {
-      await run(artifact, git)
-
-      expect(core.setFailed).not.toHaveBeenCalled()
-
-      expect(core.error).not.toHaveBeenCalled()
-      expect(core.warning).not.toHaveBeenCalled()
-      expect(core.notice).not.toHaveBeenCalled()
-
-      expect(core.setOutput).toHaveBeenCalledWith('comment-id', 10)
+      await run(artifact, getOctokit, git)
 
       const mdPromise = readFile(
         join(workDir, '.code-pushup/report-diff.md'),

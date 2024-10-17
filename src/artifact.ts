@@ -50,11 +50,10 @@ export async function uploadArtifact(
 
 export async function downloadReportArtifact(
   artifact: ArtifactClient,
+  octokit: ReturnType<typeof github.getOctokit>,
   branch: GitBranch,
   token: string
 ): Promise<string | null> {
-  const octokit = github.getOctokit(token)
-
   const {
     data: { workflow_id }
   } = await octokit.rest.actions.getWorkflowRun({

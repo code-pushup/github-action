@@ -13,9 +13,10 @@ export class GitHubApiClient implements ProviderAPIClient {
   constructor(
     private readonly token: string,
     private readonly refs: GitRefs,
-    private readonly artifact: ArtifactClient
+    private readonly artifact: ArtifactClient,
+    getOctokit: typeof github.getOctokit
   ) {
-    this.octokit = github.getOctokit(token)
+    this.octokit = getOctokit(token)
   }
 
   async createComment(body: string): Promise<Comment> {
@@ -52,7 +53,12 @@ export class GitHubApiClient implements ProviderAPIClient {
       core.debug(`Tried to download artifact without base branch, skipping`)
       return null
     }
-    return downloadReportArtifact(this.artifact, this.refs.base, this.token)
+    return downloadReportArtifact(
+      this.artifact,
+      this.octokit,
+      this.refs.base,
+      this.token
+    )
   }
 
   private convertComment(
