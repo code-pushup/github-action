@@ -10,7 +10,10 @@ const config = {
       patterns: ['src/**/*.js']
     }),
     await coveragePlugin({
-      coverageToolCommand: { command: 'npm', args: ['test'] },
+      coverageToolCommand: {
+        command: 'npm',
+        args: ['run', 'ci-test']
+      },
       reports: ['coverage/lcov.info']
     }),
     await jsPackagesPlugin({ packageManager: 'npm' })
