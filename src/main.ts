@@ -16,13 +16,14 @@ import { parseGitRefs } from './refs'
 
 export async function run(
   artifact = new DefaultArtifactClient(),
+  getOctokit = github.getOctokit,
   git = simpleGit()
 ): Promise<void> {
   try {
     const inputs = parseInputs()
 
     const refs = parseGitRefs()
-    const api = new GitHubApiClient(inputs.token, refs, artifact)
+    const api = new GitHubApiClient(inputs.token, refs, artifact, getOctokit)
     const options = createOptions(inputs)
 
     const result = await runInCI(refs, api, options, git)
