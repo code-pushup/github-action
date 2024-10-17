@@ -1,6 +1,6 @@
 import type { ArtifactClient } from '@actions/artifact'
-import core from '@actions/core'
-import github from '@actions/github'
+import * as core from '@actions/core'
+import * as github from '@actions/github'
 import type { Comment, GitRefs, ProviderAPIClient } from '@code-pushup/ci'
 import type { components } from '@octokit/openapi-types'
 import { downloadReportArtifact } from './artifact'

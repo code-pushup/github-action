@@ -1,4 +1,4 @@
-import core from '@actions/core'
+import * as core from '@actions/core'
 import type { Options } from '@code-pushup/ci'
 import type { ActionInputs } from './inputs'
 

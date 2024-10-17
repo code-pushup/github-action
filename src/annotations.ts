@@ -1,4 +1,4 @@
-import core from '@actions/core'
+import * as core from '@actions/core'
 import type { SourceFileIssue } from '@code-pushup/ci'
 import { CODE_PUSHUP_UNICODE_LOGO } from '@code-pushup/utils'
 
