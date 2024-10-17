@@ -1,12 +1,13 @@
 import core from '@actions/core'
-import type { Settings } from '@code-pushup/ci'
+import {
+  MONOREPO_TOOLS,
+  isMonorepoTool,
+  type MonorepoTool
+} from '@code-pushup/ci'
 import { resolve } from 'node:path'
 
-type MonorepoInput = Settings['monorepo']
-type MonorepoTool = Exclude<MonorepoInput, boolean>
-
 export type ActionInputs = {
-  monorepo: MonorepoInput
+  monorepo: boolean | MonorepoTool
   projects: string[] | null
   task: string
   token: string
@@ -55,7 +56,7 @@ function parseInteger(value: string): number | null {
   return int
 }
 
-function parseMonorepoInput(value: string): Settings['monorepo'] {
+function parseMonorepoInput(value: string): boolean | MonorepoTool {
   if (!value || ['false', 'False', 'FALSE'].includes(value)) {
     return false
   }
@@ -63,21 +64,11 @@ function parseMonorepoInput(value: string): Settings['monorepo'] {
     return true
   }
 
-  const tools = Object.values({
-    npm: 'npm',
-    nx: 'nx',
-    pnpm: 'pnpm',
-    turbo: 'turbo',
-    yarn: 'yarn'
-  } satisfies { [T in MonorepoTool]: T })
-
-  for (const tool of tools) {
-    if (value === tool) {
-      return value
-    }
+  if (isMonorepoTool(value)) {
+    return value
   }
   throw new Error(
-    `Invalid value for monorepo input, expected boolean or one of ${tools.join('/')}`
+    `Invalid value for monorepo input, expected boolean or one of ${MONOREPO_TOOLS.join('/')}`
   )
 }
 

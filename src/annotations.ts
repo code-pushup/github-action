@@ -1,10 +1,8 @@
 import core from '@actions/core'
-import type { ProjectRunResult } from '@code-pushup/ci'
+import type { SourceFileIssue } from '@code-pushup/ci'
 import { CODE_PUSHUP_UNICODE_LOGO } from '@code-pushup/utils'
 
-export function createAnnotationsFromIssues(
-  issues: NonNullable<ProjectRunResult['newIssues']>
-): void {
+export function createAnnotationsFromIssues(issues: SourceFileIssue[]): void {
   if (issues.length > 0) {
     core.info(`Creating annotations for ${issues.length} issues:`)
   }
