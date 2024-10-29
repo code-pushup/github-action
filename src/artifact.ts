@@ -8,6 +8,7 @@ import * as github from '@actions/github'
 import type { ArtifactData, GitBranch } from '@code-pushup/ci'
 import { DEFAULT_PERSIST_FILENAME } from '@code-pushup/models'
 import { projectToFilename } from '@code-pushup/utils'
+import type { RequestError } from '@octokit/request-error'
 import { readdir, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { ActionInputs } from './inputs'
@@ -124,7 +125,13 @@ export async function downloadReportArtifact(
   } catch (err) {
     if (err instanceof ArtifactNotFoundError) {
       core.info(
-        `Artifact not found for ${branch.ref} branch's commit ${branch.sha}`
+        `Artifact not found for ${branch.ref} branch's commit ${branch.sha} - ${err.message}`
+      )
+      return null
+    }
+    if (isRequestError(err)) {
+      core.info(
+        `Artifact download failed, received "${err.message}" error for ${err.request.method} ${err.request.url} request`
       )
       return null
     }
@@ -133,4 +140,14 @@ export async function downloadReportArtifact(
     }
     throw err
   }
+}
+
+// `err instanceof RequestError` is `false` for some reason
+function isRequestError(err: unknown): err is RequestError {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'status' in err &&
+    typeof err.status === 'number'
+  )
 }
