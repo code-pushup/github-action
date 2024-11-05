@@ -1,6 +1,7 @@
 import coveragePlugin from '@code-pushup/coverage-plugin'
 import eslintPlugin from '@code-pushup/eslint-plugin'
 import jsPackagesPlugin from '@code-pushup/js-packages-plugin'
+import 'dotenv/config'
 
 /** @type {import('@code-pushup/models').CoreConfig} */
 const config = {
