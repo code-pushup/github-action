@@ -48,7 +48,7 @@ export class GitHubApiClient implements ProviderAPIClient {
     return comments.map(comment => this.convertComment(comment))
   }
 
-  async downloadReportArtifact(): Promise<string | null> {
+  async downloadReportArtifact(project?: string): Promise<string | null> {
     if (this.refs.base == null) {
       core.debug(`Tried to download artifact without base branch, skipping`)
       return null
@@ -57,7 +57,8 @@ export class GitHubApiClient implements ProviderAPIClient {
       this.artifact,
       this.octokit,
       this.refs.base,
-      this.token
+      this.token,
+      project
     )
   }
 
