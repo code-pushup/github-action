@@ -1,4 +1,4 @@
-import type { ArtifactClient, UploadArtifactResponse } from '@actions/artifact'
+import type { ArtifactClient } from '@actions/artifact'
 import core from '@actions/core'
 import github from '@actions/github'
 import { jest } from '@jest/globals'
@@ -86,7 +86,7 @@ describe('code-pushup action', () => {
     artifact = {
       uploadArtifact: jest
         .fn<ArtifactClient['uploadArtifact']>()
-        .mockResolvedValue({ id: 123 } as UploadArtifactResponse)
+        .mockResolvedValue({ id: 123, size: 12345 })
     } as Partial<ArtifactClient> as ArtifactClient
 
     await rm(workDir, { recursive: true, force: true })

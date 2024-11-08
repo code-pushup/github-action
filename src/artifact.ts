@@ -53,7 +53,8 @@ export async function downloadReportArtifact(
   artifact: ArtifactClient,
   octokit: ReturnType<typeof github.getOctokit>,
   branch: GitBranch,
-  token: string
+  token: string,
+  project: string | undefined
 ): Promise<string | null> {
   const {
     data: { workflow_id }
@@ -95,7 +96,7 @@ export async function downloadReportArtifact(
     }
 
     const { artifact: reportArtifact } = await artifact.getArtifact(
-      REPORT_ARTIFACT_NAME,
+      createReportArtifactName(project),
       { findBy }
     )
     core.debug(
