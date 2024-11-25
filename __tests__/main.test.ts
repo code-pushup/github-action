@@ -23,7 +23,7 @@ import {
 import { run } from '../src/main'
 
 describe('code-pushup action', () => {
-  const workDir = join('tmp', 'git-repo')
+  const workDir = join(process.cwd(), 'tmp', 'git-repo')
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   const getOctokit = () =>
@@ -65,6 +65,7 @@ describe('code-pushup action', () => {
     process.env['INPUT_TOKEN'] = '<mock-github-token>'
     process.env['INPUT_BIN'] = 'npx code-pushup'
     process.env['INPUT_DIRECTORY'] = workDir
+    process.env['INPUT_OUTPUT'] = '.code-pushup'
     process.env['INPUT_RETENTION'] = '14'
     process.env['INPUT_TASK'] = 'code-pushup'
     process.env['INPUT_SILENT'] = 'true'

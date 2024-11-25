@@ -8,6 +8,7 @@ export function createOptions(inputs: ActionInputs): Required<Options> {
     projects: inputs.projects,
     task: inputs.task,
     directory: inputs.directory,
+    output: inputs.output,
     bin: inputs.bin,
     config: inputs.config,
     detectNewIssues: inputs.annotations,

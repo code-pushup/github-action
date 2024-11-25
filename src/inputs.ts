@@ -4,7 +4,6 @@ import {
   isMonorepoTool,
   type MonorepoTool
 } from '@code-pushup/ci'
-import { resolve } from 'node:path'
 
 export type ActionInputs = {
   monorepo: boolean | MonorepoTool
@@ -14,6 +13,7 @@ export type ActionInputs = {
   bin: string
   config: string | null
   directory: string
+  output: string
   silent: boolean
   artifacts: boolean
   retention: number | null
@@ -26,7 +26,8 @@ export function parseInputs(): ActionInputs {
   const task = core.getInput('task')
   const token = core.getInput('token')
   const config = core.getInput('config') || null
-  const directory = resolve(core.getInput('directory') || process.cwd())
+  const directory = core.getInput('directory') || process.cwd()
+  const output = core.getInput('output')
   const bin = core.getInput('bin')
   const silent = core.getBooleanInput('silent')
   const artifacts = core.getBooleanInput('artifacts')
@@ -41,6 +42,7 @@ export function parseInputs(): ActionInputs {
     bin,
     config,
     directory,
+    output,
     silent,
     artifacts,
     retention,

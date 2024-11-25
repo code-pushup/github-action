@@ -43,6 +43,11 @@ inputs:
   directory:
     description: Custom working directory
     required: false
+  output:
+    description:
+      Custom report output directory (use '{project}'-syntax in monorepo mode)
+    required: false
+    default: .code-pushup
   silent:
     description: Silence logs from Code Pushup CLI
     required: true
