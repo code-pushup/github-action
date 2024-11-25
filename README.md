@@ -67,6 +67,7 @@ The action may be customized using the following optional inputs:
 | `artifacts`   | Toggles if artifacts will we uploaded/downloaded                                  | `true`                                                                                                 |
 | `retention`   | Artifact retention period in days                                                 | from repository settings                                                                               |
 | `directory`   | Directory in which `code-pushup` should run                                       | `process.cwd()`                                                                                        |
+| `output`      | Directory where reports will be created                                           | `.code-pushup`                                                                                         |
 | `config`      | Path to config file (`--config` option)                                           | see [`@code-pushup/cli` docs](https://github.com/code-pushup/cli/tree/main/packages/cli#configuration) |
 | `silent`      | Toggles if logs from Code PushUp CLI are printed                                  | `false`                                                                                                |
 | `bin`         | Command for executing Code PushUp CLI                                             | `npx --no-install code-pushup`                                                                         |
@@ -149,4 +150,15 @@ can override the name using the optional `task` input:
   with:
     monorepo: nx
     task: analyze # custom Nx target
+```
+
+For caching purposes, you may prefer to separate output directories per project.
+The `output` input supports interpolating the project name in the path using
+`{project}` syntax:
+
+```yml
+- uses: code-pushup/github-action@v0
+  with:
+    monorepo: true
+    output: .code-pushup/{project}
 ```
