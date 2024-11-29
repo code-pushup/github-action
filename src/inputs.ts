@@ -9,6 +9,7 @@ export type ActionInputs = {
   monorepo: boolean | MonorepoTool
   projects: string[] | null
   task: string
+  nxProjectsFilter: string
   token: string
   bin: string
   config: string | null
@@ -24,6 +25,7 @@ export function parseInputs(): ActionInputs {
   const monorepo = parseMonorepoInput(core.getInput('monorepo'))
   const projects = parseProjectsInput(core.getInput('projects'))
   const task = core.getInput('task')
+  const nxProjectsFilter = core.getInput('nxProjectsFilter')
   const token = core.getInput('token')
   const config = core.getInput('config') || null
   const directory = core.getInput('directory') || process.cwd()
@@ -38,6 +40,7 @@ export function parseInputs(): ActionInputs {
     monorepo,
     projects,
     task,
+    nxProjectsFilter,
     token,
     bin,
     config,
