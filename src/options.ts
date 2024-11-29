@@ -7,6 +7,7 @@ export function createOptions(inputs: ActionInputs): Required<Options> {
     monorepo: inputs.monorepo,
     projects: inputs.projects,
     task: inputs.task,
+    nxProjectsFilter: inputs.nxProjectsFilter,
     directory: inputs.directory,
     output: inputs.output,
     bin: inputs.bin,

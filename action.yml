@@ -33,6 +33,11 @@ inputs:
       Dependending on what monorepo tool is being used, this task may represent a `package.json` script, binary executable, Nx target or Turbo task.
     required: true
     default: code-pushup
+  nxProjectsFilter:
+    description: |
+      CLI arguments for `nx show projects` used to list Nx projects in monorepo mode. Replaces `{task}` with `task` input.
+    required: true
+    default: --with-target={task}
   bin:
     description: Custom code-pushup executable
     required: true

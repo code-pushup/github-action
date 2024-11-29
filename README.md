@@ -57,20 +57,21 @@ jobs:
 
 The action may be customized using the following optional inputs:
 
-| Name          | Description                                                                       | Default                                                                                                |
-| :------------ | :-------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
-| `monorepo`    | Enables [monorepo mode](#monorepo-mode)                                           | `false`                                                                                                |
-| `projects`    | Custom projects configuration for [monorepo mode](#monorepo-mode)                 | none                                                                                                   |
-| `task`        | Name of command to run Code PushUp per project in [monorepo mode](#monorepo-mode) | `code-pushup`                                                                                          |
-| `token`       | GitHub token for authorizing GitHub API requests                                  | `${{ github.token }}`                                                                                  |
-| `annotations` | Toggles if annotations should be created for relevant Code PushUp issues          | `true`                                                                                                 |
-| `artifacts`   | Toggles if artifacts will we uploaded/downloaded                                  | `true`                                                                                                 |
-| `retention`   | Artifact retention period in days                                                 | from repository settings                                                                               |
-| `directory`   | Directory in which `code-pushup` should run                                       | `process.cwd()`                                                                                        |
-| `output`      | Directory where reports will be created                                           | `.code-pushup`                                                                                         |
-| `config`      | Path to config file (`--config` option)                                           | see [`@code-pushup/cli` docs](https://github.com/code-pushup/cli/tree/main/packages/cli#configuration) |
-| `silent`      | Toggles if logs from Code PushUp CLI are printed                                  | `false`                                                                                                |
-| `bin`         | Command for executing Code PushUp CLI                                             | `npx --no-install code-pushup`                                                                         |
+| Name               | Description                                                                       | Default                                                                                                |
+| :----------------- | :-------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| `monorepo`         | Enables [monorepo mode](#monorepo-mode)                                           | `false`                                                                                                |
+| `projects`         | Custom projects configuration for [monorepo mode](#monorepo-mode)                 | none                                                                                                   |
+| `task`             | Name of command to run Code PushUp per project in [monorepo mode](#monorepo-mode) | `code-pushup`                                                                                          |
+| `nxProjectsFilter` | CLI arguments used to filter Nx projects in [monorepo mode](#monorepo-mode)       | `--with-target={task}`                                                                                 |
+| `token`            | GitHub token for authorizing GitHub API requests                                  | `${{ github.token }}`                                                                                  |
+| `annotations`      | Toggles if annotations should be created for relevant Code PushUp issues          | `true`                                                                                                 |
+| `artifacts`        | Toggles if artifacts will we uploaded/downloaded                                  | `true`                                                                                                 |
+| `retention`        | Artifact retention period in days                                                 | from repository settings                                                                               |
+| `directory`        | Directory in which `code-pushup` should run                                       | `process.cwd()`                                                                                        |
+| `output`           | Directory where reports will be created                                           | `.code-pushup`                                                                                         |
+| `config`           | Path to config file (`--config` option)                                           | see [`@code-pushup/cli` docs](https://github.com/code-pushup/cli/tree/main/packages/cli#configuration) |
+| `silent`           | Toggles if logs from Code PushUp CLI are printed                                  | `false`                                                                                                |
+| `bin`              | Command for executing Code PushUp CLI                                             | `npx --no-install code-pushup`                                                                         |
 
 For example, this will run `code-pushup` commands in a non-root folder and
 retain report artifacts for 30 days:
@@ -161,4 +162,20 @@ The `output` input supports interpolating the project name in the path using
   with:
     monorepo: true
     output: .code-pushup/{project}
+```
+
+In Nx monorepos, projects are listed using
+`nx show projects --with-target=code-pushup` by default. The `nxProjectsFilter`
+input sets the CLI arguments forwarded to
+[`nx show projects`](https://nx.dev/nx-api/nx/documents/show#projects) (default
+is `--with-target={task}`, with `{task}` being replaced by the `task` input
+value). This gives a lot of flexibility in customizing which Nx projects should
+be run:
+
+```yml
+- uses: code-pushup/github-action@v0
+  with:
+    monorepo: nx
+    nxProjectsFilter:
+      '--with-target=code-pushup --affected --projects=apps/* exclude=*-e2e'
 ```
