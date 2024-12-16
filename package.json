@@ -95,7 +95,7 @@
     "@code-pushup/js-packages-plugin": "^0.56.0",
     "@code-pushup/portal-client": "^0.9.0",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.10.1",
+    "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "@vercel/ncc": "^0.38.3",
@@ -107,11 +107,11 @@
     "eslint-plugin-prettier": "^5.2.1",
     "jest": "^29.7.0",
     "make-coverage-badge": "^1.2.0",
-    "memfs": "^4.14.1",
+    "memfs": "^4.15.0",
     "prettier": "^3.4.2",
     "prettier-eslint": "^16.3.0",
     "ts-jest": "^29.2.5",
-    "type-fest": "^4.30.0",
+    "type-fest": "^4.30.1",
     "typescript": "^5.7.2"
   }
 }
