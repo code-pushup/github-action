@@ -5,11 +5,11 @@ import type { ActionInputs } from './inputs'
 export function createOptions(inputs: ActionInputs): Required<Options> {
   return {
     monorepo: inputs.monorepo,
+    parallel: inputs.parallel,
     projects: inputs.projects,
     task: inputs.task,
     nxProjectsFilter: inputs.nxProjectsFilter,
     directory: inputs.directory,
-    output: inputs.output,
     bin: inputs.bin,
     config: inputs.config,
     detectNewIssues: inputs.annotations,

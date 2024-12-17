@@ -33,13 +33,17 @@ export async function run(
       core.info(`Commented on PR #${github.context.issue.number}`)
     }
 
-    const diffArtifact =
-      result.mode === 'standalone' ? result.artifacts.diff : result.diffArtifact
-    if (diffArtifact) {
+    const diffFiles =
+      result.mode === 'standalone'
+        ? Object.values(result.files.diff ?? {})
+        : result.diffPath
+          ? [result.diffPath]
+          : []
+    if (diffFiles.length > 0) {
       await uploadArtifact(
         artifact,
         createDiffArtifactName(),
-        diffArtifact,
+        diffFiles,
         inputs
       )
     }
@@ -48,7 +52,7 @@ export async function run(
       const id = await uploadArtifact(
         artifact,
         createReportArtifactName(),
-        result.artifacts.report,
+        Object.values(result.files.report),
         inputs
       )
       core.setOutput('artifact-id', id)
@@ -57,14 +61,14 @@ export async function run(
         await uploadArtifact(
           artifact,
           createReportArtifactName(project.name),
-          project.artifacts.report,
+          Object.values(project.files.report),
           inputs
         )
-        if (project.artifacts.diff) {
+        if (project.files.diff) {
           uploadArtifact(
             artifact,
             createDiffArtifactName(project.name),
-            project.artifacts.diff,
+            Object.values(project.files.diff),
             inputs
           )
         }

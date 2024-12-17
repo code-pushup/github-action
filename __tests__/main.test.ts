@@ -65,7 +65,7 @@ describe('code-pushup action', () => {
     process.env['INPUT_TOKEN'] = '<mock-github-token>'
     process.env['INPUT_BIN'] = 'npx code-pushup'
     process.env['INPUT_DIRECTORY'] = workDir
-    process.env['INPUT_OUTPUT'] = '.code-pushup'
+    process.env['INPUT_PARALLEL'] = 'false'
     process.env['INPUT_RETENTION'] = '14'
     process.env['INPUT_TASK'] = 'code-pushup'
     process.env['INPUT_SILENT'] = 'true'
@@ -148,7 +148,7 @@ describe('code-pushup action', () => {
           expect.stringContaining('report.json'),
           expect.stringContaining('report.md')
         ]),
-        expect.stringContaining('.code-pushup'),
+        process.cwd(),
         { retentionDays: 14 }
       )
 

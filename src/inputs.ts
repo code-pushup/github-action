@@ -7,6 +7,7 @@ import {
 
 export type ActionInputs = {
   monorepo: boolean | MonorepoTool
+  parallel: boolean | number
   projects: string[] | null
   task: string
   nxProjectsFilter: string
@@ -14,7 +15,6 @@ export type ActionInputs = {
   bin: string
   config: string | null
   directory: string
-  output: string
   silent: boolean
   artifacts: boolean
   retention: number | null
@@ -23,13 +23,13 @@ export type ActionInputs = {
 
 export function parseInputs(): ActionInputs {
   const monorepo = parseMonorepoInput(core.getInput('monorepo'))
+  const parallel = parseParallelInput(core.getInput('parallel'))
   const projects = parseProjectsInput(core.getInput('projects'))
   const task = core.getInput('task')
   const nxProjectsFilter = core.getInput('nxProjectsFilter')
   const token = core.getInput('token')
   const config = core.getInput('config') || null
   const directory = core.getInput('directory') || process.cwd()
-  const output = core.getInput('output')
   const bin = core.getInput('bin')
   const silent = core.getBooleanInput('silent')
   const artifacts = core.getBooleanInput('artifacts')
@@ -38,6 +38,7 @@ export function parseInputs(): ActionInputs {
 
   return {
     monorepo,
+    parallel,
     projects,
     task,
     nxProjectsFilter,
@@ -45,7 +46,6 @@ export function parseInputs(): ActionInputs {
     bin,
     config,
     directory,
-    output,
     silent,
     artifacts,
     retention,
@@ -61,12 +61,23 @@ function parseInteger(value: string): number | null {
   return int
 }
 
-function parseMonorepoInput(value: string): boolean | MonorepoTool {
-  if (!value || ['false', 'False', 'FALSE'].includes(value)) {
+function parseBoolean(value: string): boolean | null {
+  if (['false', 'False', 'FALSE'].includes(value)) {
     return false
   }
   if (['true', 'True', 'TRUE'].includes(value)) {
     return true
+  }
+  return null
+}
+
+function parseMonorepoInput(value: string): boolean | MonorepoTool {
+  if (!value) {
+    return false
+  }
+  const bool = parseBoolean(value)
+  if (bool != null) {
+    return bool
   }
 
   if (isMonorepoTool(value)) {
@@ -82,4 +93,21 @@ function parseProjectsInput(value: string): string[] | null {
     return null
   }
   return value.split(',').map(item => item.trim())
+}
+
+function parseParallelInput(value: string): boolean | number {
+  if (!value) {
+    return false
+  }
+  const bool = parseBoolean(value)
+  if (bool != null) {
+    return bool
+  }
+  const int = parseInteger(value)
+  if (int == null || int < 1) {
+    throw new Error(
+      'Invalid value for parallel input, expected boolean or positive integer'
+    )
+  }
+  return int
 }
