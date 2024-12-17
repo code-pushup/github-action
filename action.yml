@@ -19,6 +19,15 @@ inputs:
       - `pnpm`: PNPM workspaces
     required: true
     default: false
+  parallel:
+    description: |
+      Configures parallel execution in monorepo mode. Possibly values are:
+
+      - `false`: sequential (default)
+      - `true`: parallel with default number of jobs (depends on monorepo tool)
+      - integer which sets the number of concurrent jobs
+    required: true
+    default: false
   projects:
     description: |
       Project folders for custom monorepo setup.
@@ -48,11 +57,6 @@ inputs:
   directory:
     description: Custom working directory
     required: false
-  output:
-    description:
-      Custom report output directory (use '{project}'-syntax in monorepo mode)
-    required: false
-    default: .code-pushup
   silent:
     description: Silence logs from Code Pushup CLI
     required: true

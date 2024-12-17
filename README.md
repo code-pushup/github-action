@@ -60,6 +60,7 @@ The action may be customized using the following optional inputs:
 | Name               | Description                                                                       | Default                                                                                                |
 | :----------------- | :-------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
 | `monorepo`         | Enables [monorepo mode](#monorepo-mode)                                           | `false`                                                                                                |
+| `parallel`         | Configured parallel execution in [monorepo mode](#monorepo-mode)                  | `false`                                                                                                |
 | `projects`         | Custom projects configuration for [monorepo mode](#monorepo-mode)                 | none                                                                                                   |
 | `task`             | Name of command to run Code PushUp per project in [monorepo mode](#monorepo-mode) | `code-pushup`                                                                                          |
 | `nxProjectsFilter` | CLI arguments used to filter Nx projects in [monorepo mode](#monorepo-mode)       | `--with-target={task}`                                                                                 |
@@ -68,7 +69,6 @@ The action may be customized using the following optional inputs:
 | `artifacts`        | Toggles if artifacts will we uploaded/downloaded                                  | `true`                                                                                                 |
 | `retention`        | Artifact retention period in days                                                 | from repository settings                                                                               |
 | `directory`        | Directory in which `code-pushup` should run                                       | `process.cwd()`                                                                                        |
-| `output`           | Directory where reports will be created                                           | `.code-pushup`                                                                                         |
 | `config`           | Path to config file (`--config` option)                                           | see [`@code-pushup/cli` docs](https://github.com/code-pushup/cli/tree/main/packages/cli#configuration) |
 | `silent`           | Toggles if logs from Code PushUp CLI are printed                                  | `false`                                                                                                |
 | `bin`              | Command for executing Code PushUp CLI                                             | `npx --no-install code-pushup`                                                                         |
@@ -153,17 +153,6 @@ can override the name using the optional `task` input:
     task: analyze # custom Nx target
 ```
 
-For caching purposes, you may prefer to separate output directories per project.
-The `output` input supports interpolating the project name in the path using
-`{project}` syntax:
-
-```yml
-- uses: code-pushup/github-action@v0
-  with:
-    monorepo: true
-    output: .code-pushup/{project}
-```
-
 In Nx monorepos, projects are listed using
 `nx show projects --with-target=code-pushup` by default. The `nxProjectsFilter`
 input sets the CLI arguments forwarded to
@@ -178,4 +167,27 @@ be run:
     monorepo: nx
     nxProjectsFilter:
       '--with-target=code-pushup --affected --projects=apps/* exclude=*-e2e'
+```
+
+### Parallel tasks
+
+By default, tasks are run sequentially for each project in the monorepo. The
+`parallel` input enables parallel execution for tools which support it (Nx,
+Turborepo, PNPM, Yarn 2+).
+
+```yml
+- uses: code-pushup/github-action@v0
+  with:
+    monorepo: true
+    parallel: true
+```
+
+The maximum number of concurrent tasks can be set by passing in a number instead
+of a boolean:
+
+```yml
+- uses: code-pushup/github-action@v0
+  with:
+    monorepo: true
+    parallel: 3
 ```

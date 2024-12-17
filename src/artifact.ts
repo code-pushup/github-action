@@ -5,7 +5,7 @@ import {
 } from '@actions/artifact'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import type { ArtifactData, GitBranch } from '@code-pushup/ci'
+import type { GitBranch } from '@code-pushup/ci'
 import { DEFAULT_PERSIST_FILENAME } from '@code-pushup/models'
 import { projectToFilename } from '@code-pushup/utils'
 import type { RequestError } from '@octokit/request-error'
@@ -36,13 +36,13 @@ function createArtifactName(base: string, project: string | undefined): string {
 export async function uploadArtifact(
   artifact: ArtifactClient,
   name: string,
-  data: ArtifactData,
+  files: string[],
   inputs: Pick<ActionInputs, 'retention'>
 ): Promise<number | undefined> {
   const { id, size } = await artifact.uploadArtifact(
     name,
-    data.files,
-    data.rootDir,
+    files,
+    process.cwd(),
     inputs.retention != null ? { retentionDays: inputs.retention } : undefined
   )
   core.debug(`Uploaded ${name} artifact (${size} bytes)`)
