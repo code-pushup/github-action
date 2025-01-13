@@ -84,7 +84,7 @@
     "@code-pushup/models": "^0.57.0",
     "@code-pushup/utils": "^0.57.0",
     "better-enums": "^0.2.2",
-    "fast-glob": "^3.3.2",
+    "fast-glob": "^3.3.3",
     "simple-git": "^3.27.0",
     "yaml": "^2.6.1"
   },
