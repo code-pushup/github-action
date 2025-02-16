@@ -39,7 +39,7 @@ inputs:
     description: |
       Name of task for running Code PushUp CLI in monorepo mode. Defaults to `code-pushup`.
 
-      Dependending on what monorepo tool is being used, this task may represent a `package.json` script, binary executable, Nx target or Turbo task.
+      Depending on what monorepo tool is being used, this task may represent a `package.json` script, binary executable, Nx target or Turbo task.
     required: true
     default: code-pushup
   nxProjectsFilter:
@@ -84,5 +84,5 @@ outputs:
     description: ID of created or updated GitHub comment
 
 runs:
-  using: node20
+  using: 'node20' # TODO: update the runner to node22 as soon as it is supported https://github.com/actions/runner/issues/3600
   main: dist/index.js
