@@ -63,7 +63,7 @@ export class GitHubApiClient implements ProviderAPIClient {
   }
 
   private convertComment(
-    comment: components['schemas']['issue-comment']
+    comment: Pick<components['schemas']['issue-comment'], 'id' | 'body' | 'url'>
   ): Comment {
     const { id, body = '', url } = comment
     return { id, body, url }
