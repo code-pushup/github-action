@@ -18,7 +18,7 @@ inputs:
       - `yarn`: Yarn workspaces
       - `pnpm`: PNPM workspaces
     required: true
-    default: false
+    default: 'false'
   parallel:
     description: |
       Configures parallel execution in monorepo mode. Possibly values are:
@@ -27,7 +27,7 @@ inputs:
       - `true`: parallel with default number of jobs (depends on monorepo tool)
       - integer which sets the number of concurrent jobs
     required: true
-    default: false
+    default: 'false'
   projects:
     description: |
       Project folders for custom monorepo setup.
@@ -60,7 +60,7 @@ inputs:
   silent:
     description: Silence logs from Code Pushup CLI
     required: true
-    default: false
+    default: 'false'
   token:
     description: GITHUB_TOKEN or a repo scoped PAT
     required: true
@@ -68,14 +68,14 @@ inputs:
   artifacts:
     description: Upload/download artifacts for caching code-pushup reports
     required: true
-    default: true
+    default: 'true'
   retention:
     description: Artifact retention period in days
     required: false
   annotations:
     description: Create file annotations in GitHub
     required: true
-    default: true
+    default: 'true'
 
 outputs:
   artifact-id:
