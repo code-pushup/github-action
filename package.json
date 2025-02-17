@@ -101,7 +101,7 @@
     "@vercel/ncc": "^0.38.3",
     "dotenv": "^16.4.7",
     "eslint": "^8.57.1",
-    "eslint-plugin-github": "^5.1.7",
+    "eslint-plugin-github": "^5.1.8",
     "eslint-plugin-jest": "^28.11.0",
     "eslint-plugin-jsonc": "^2.19.1",
     "eslint-plugin-prettier": "^5.2.3",
@@ -111,7 +111,7 @@
     "prettier": "^3.5.1",
     "prettier-eslint": "^16.3.0",
     "ts-jest": "^29.2.5",
-    "type-fest": "^4.34.1",
+    "type-fest": "^4.35.0",
     "typescript": "^5.7.3"
   }
 }
