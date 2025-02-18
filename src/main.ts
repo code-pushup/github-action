@@ -92,6 +92,8 @@ export async function run(
       }
     }
   } catch (error) {
-    core.setFailed(error instanceof Error ? error.message : `${error}`)
+    const errorMessage = error instanceof Error ? error.message : `${error}`
+    core.error(errorMessage)
+    core.setFailed(errorMessage)
   }
 }
