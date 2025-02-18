@@ -89,10 +89,10 @@
     "yaml": "^2.7.0"
   },
   "devDependencies": {
-    "@code-pushup/cli": "^0.59.0",
-    "@code-pushup/coverage-plugin": "^0.59.0",
-    "@code-pushup/eslint-plugin": "^0.59.0",
-    "@code-pushup/js-packages-plugin": "^0.59.0",
+    "@code-pushup/cli": "^0.60.1",
+    "@code-pushup/coverage-plugin": "^0.60.1",
+    "@code-pushup/eslint-plugin": "^0.60.1",
+    "@code-pushup/js-packages-plugin": "^0.60.1",
     "@code-pushup/portal-client": "^0.10.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.4",

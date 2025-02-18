@@ -26,6 +26,8 @@ export async function run(
     const api = new GitHubApiClient(inputs.token, refs, artifact, getOctokit)
     const options = createOptions(inputs)
 
+    console.log('Running with NodeJS version', process.version)
+
     const result = await runInCI(refs, api, options, git)
 
     if (result.commentId != null) {
