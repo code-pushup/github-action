@@ -11,4 +11,4 @@ if (!Array.prototype.toSorted) {
   }
 }
 
-run()
+await run()
