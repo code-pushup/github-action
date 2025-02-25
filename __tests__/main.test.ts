@@ -114,6 +114,8 @@ describe('code-pushup action', () => {
     await git.init()
     await git.addConfig('user.name', 'John Doe')
     await git.addConfig('user.email', 'john.doe@example.com')
+    await git.addConfig('commit.gpgSign', 'false')
+    await git.addConfig('tag.gpgSign', 'false')
     await git.branch(['-M', 'main'])
 
     await git.add('index.js')
