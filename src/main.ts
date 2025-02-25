@@ -85,7 +85,7 @@ export async function run(
           inputs
         )
         if (project.files.diff) {
-          uploadArtifact(
+          await uploadArtifact(
             artifact,
             createDiffArtifactName(project.name),
             Object.values(project.files.diff),
