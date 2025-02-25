@@ -21,9 +21,24 @@ export async function run(
   getOctokit = github.getOctokit,
   git = simpleGit()
 ): Promise<void> {
+  core.info(`~~ process.env\n${JSON.stringify(process.env)}`)
+
   try {
     const inputs = parseInputs()
     const options = createOptions(inputs)
+
+    // https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/troubleshooting-workflows/enabling-debug-logging
+    if (
+      process.env['ACTIONS_RUNNER_DEBUG'] === 'true' ||
+      process.env['ACTIONS_STEP_DEBUG'] === 'true'
+    ) {
+      options.debug = true
+    }
+
+    if (options.debug) {
+      core.info(`${LOG_PREFIX} Setting CP_VERBOSE env variable to true`)
+      process.env['CP_VERBOSE'] = 'true'
+    }
 
     const [nodeMajorString] = (
       process.version.startsWith('v')
@@ -32,6 +47,9 @@ export async function run(
     ).split('.')
     const majorVersion = parseInt(nodeMajorString, 10)
     const isUnsupportedVersion = majorVersion < 20
+
+    core.info(`~~ options.debug\n${options.debug}`)
+    core.info(`~~ options\n${JSON.stringify(options)}`)
 
     if (isUnsupportedVersion) {
       core.warning(
@@ -46,6 +64,16 @@ export async function run(
     const refs = parseGitRefs()
     const api = new GitHubApiClient(inputs.token, refs, artifact, getOctokit)
 
+    core.info('~~ core.info')
+    core.debug('~~ core.debug')
+    core.info('~~ core.info')
+    core.warning('~~ core.warning')
+    core.error('~~ core.error')
+    console.log('~~ console.log')
+    console.info('~~ console.info')
+    console.warn('~~ console.warn')
+    console.error('~~ console.error')
+
     const result = await runInCI(refs, api, options, git)
 
     if (result.commentId != null) {
@@ -59,6 +87,7 @@ export async function run(
         : result.diffPath
           ? [result.diffPath]
           : []
+
     if (diffFiles.length > 0) {
       await uploadArtifact(
         artifact,
