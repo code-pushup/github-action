@@ -14,6 +14,8 @@ import { parseInputs } from './inputs'
 import { createOptions } from './options'
 import { parseGitRefs } from './refs'
 
+const LOG_PREFIX = '[Code PushUp GitHub action]'
+
 export async function run(
   artifact = new DefaultArtifactClient(),
   getOctokit = github.getOctokit,
@@ -21,12 +23,28 @@ export async function run(
 ): Promise<void> {
   try {
     const inputs = parseInputs()
+    const options = createOptions(inputs)
+
+    const [nodeMajorString] = (
+      process.version.startsWith('v')
+        ? process.version.slice(1)
+        : process.version
+    ).split('.')
+    const majorVersion = parseInt(nodeMajorString, 10)
+    const isUnsupportedVersion = majorVersion < 20
+
+    if (isUnsupportedVersion) {
+      core.warning(
+        `${LOG_PREFIX} Internal runner is using unsupported NodeJS version ${process.version}`
+      )
+    } else if (options.debug) {
+      core.info(
+        `${LOG_PREFIX} Internal runner is using NodeJS version ${process.version}`
+      )
+    }
 
     const refs = parseGitRefs()
     const api = new GitHubApiClient(inputs.token, refs, artifact, getOctokit)
-    const options = createOptions(inputs)
-
-    console.log('Running with NodeJS version', process.version)
 
     const result = await runInCI(refs, api, options, git)
 
@@ -95,5 +113,8 @@ export async function run(
     const errorMessage = error instanceof Error ? error.message : `${error}`
     core.error(errorMessage)
     core.setFailed(errorMessage)
+    return
   }
+
+  core.info(`${LOG_PREFIX} Finished running successfully`)
 }
