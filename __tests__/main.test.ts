@@ -2,6 +2,7 @@ import type { ArtifactClient } from '@actions/artifact'
 import core from '@actions/core'
 import github from '@actions/github'
 import { jest } from '@jest/globals'
+import type { Report } from '@code-pushup/models'
 import type { components } from '@octokit/openapi-types'
 import type { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods'
 import {
