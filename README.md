@@ -67,6 +67,7 @@ The action may be customized using the following optional inputs:
 | `token`            | GitHub token for authorizing GitHub API requests                                  | `${{ github.token }}`                                                                                  |
 | `annotations`      | Toggles if annotations should be created for relevant Code PushUp issues          | `true`                                                                                                 |
 | `artifacts`        | Toggles if artifacts will we uploaded/downloaded                                  | `true`                                                                                                 |
+| `skipComment`      | Toggles if comparison comment is posted to PR                                     | `false`                                                                                                |
 | `retention`        | Artifact retention period in days                                                 | from repository settings                                                                               |
 | `directory`        | Directory in which `code-pushup` should run                                       | `process.cwd()`                                                                                        |
 | `config`           | Path to config file (`--config` option)                                           | see [`@code-pushup/cli` docs](https://github.com/code-pushup/cli/tree/main/packages/cli#configuration) |
