@@ -19,6 +19,7 @@ export type ActionInputs = {
   artifacts: boolean
   retention: number | null
   annotations: boolean
+  skipComment: boolean
 }
 
 export function parseInputs(): ActionInputs {
@@ -35,6 +36,7 @@ export function parseInputs(): ActionInputs {
   const artifacts = core.getBooleanInput('artifacts')
   const retention = parseInteger(core.getInput('retention'))
   const annotations = core.getBooleanInput('annotations')
+  const skipComment = core.getBooleanInput('skipComment')
 
   return {
     monorepo,
@@ -49,7 +51,8 @@ export function parseInputs(): ActionInputs {
     silent,
     artifacts,
     retention,
-    annotations
+    annotations,
+    skipComment
   }
 }
 

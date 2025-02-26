@@ -76,6 +76,10 @@ inputs:
     description: Create file annotations in GitHub
     required: true
     default: true
+  skipComment:
+    description: Skip PR comment
+    required: true
+    default: false
 
 outputs:
   artifact-id:

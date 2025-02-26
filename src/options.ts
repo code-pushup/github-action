@@ -13,6 +13,7 @@ export function createOptions(inputs: ActionInputs): Required<Options> {
     bin: inputs.bin,
     config: inputs.config,
     detectNewIssues: inputs.annotations,
+    skipComment: inputs.skipComment,
     silent: inputs.silent,
     debug: core.isDebug(),
     logger: {

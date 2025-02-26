@@ -1,8 +1,8 @@
 import type { ArtifactClient } from '@actions/artifact'
 import core from '@actions/core'
 import github from '@actions/github'
-import { jest } from '@jest/globals'
 import type { Report } from '@code-pushup/models'
+import { jest } from '@jest/globals'
 import type { components } from '@octokit/openapi-types'
 import type { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods'
 import {
@@ -72,6 +72,7 @@ describe('code-pushup action', () => {
     process.env['INPUT_SILENT'] = 'true'
     process.env['INPUT_ARTIFACTS'] = 'true'
     process.env['INPUT_ANNOTATIONS'] = 'true'
+    process.env['INPUT_SKIPCOMMENT'] = 'false'
 
     jest.spyOn(github.context, 'repo', 'get').mockReturnValue({
       owner: 'dunder-mifflin',
