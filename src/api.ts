@@ -1,9 +1,10 @@
 import type { ArtifactClient } from '@actions/artifact'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import type { Comment, GitRefs, ProviderAPIClient } from '@code-pushup/ci'
+import type { Comment, ProviderAPIClient } from '@code-pushup/ci'
 import type { components } from '@octokit/openapi-types'
 import { downloadReportArtifact } from './artifact'
+import type { GitHubRefs } from './refs'
 
 export class GitHubApiClient implements ProviderAPIClient {
   readonly maxCommentChars = 65_536
@@ -12,7 +13,7 @@ export class GitHubApiClient implements ProviderAPIClient {
 
   constructor(
     private readonly token: string,
-    private readonly refs: GitRefs,
+    private readonly refs: GitHubRefs,
     private readonly artifact: ArtifactClient,
     getOctokit: typeof github.getOctokit
   ) {
