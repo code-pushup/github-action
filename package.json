@@ -33,6 +33,7 @@
     "package": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt",
     "package:watch": "npm run package -- --watch",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "release": "node script/release.js",
     "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
   },
   "license": "MIT",
