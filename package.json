@@ -81,7 +81,7 @@
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
     "@actions/github": "^6.0.0",
-    "@code-pushup/ci": "^0.64.1",
+    "@code-pushup/ci": "^0.65.0",
     "@code-pushup/models": "^0.64.1",
     "@code-pushup/utils": "^0.64.1",
     "better-enums": "^0.2.2",
