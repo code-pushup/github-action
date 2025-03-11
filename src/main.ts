@@ -5,11 +5,7 @@ import { runInCI } from '@code-pushup/ci'
 import { simpleGit } from 'simple-git'
 import { createAnnotationsFromIssues } from './annotations'
 import { GitHubApiClient } from './api'
-import {
-  createDiffArtifactName,
-  createReportArtifactName,
-  uploadArtifact
-} from './artifact'
+import { REPORT_ARTIFACT_NAME, uploadArtifact } from './artifact'
 import { parseInputs } from './inputs'
 import { createOptions } from './options'
 import { parseGitRefs } from './refs'
@@ -57,42 +53,30 @@ export async function run(
     core.info(`Commented on PR #${github.context.issue.number}`)
   }
 
-  const diffFiles =
+  const artifactFiles =
     result.mode === 'standalone'
-      ? Object.values(result.files.diff ?? {})
-      : result.diffPath
-        ? [result.diffPath]
-        : []
+      ? [
+          ...Object.values(result.files.current),
+          ...Object.values(result.files.previous ?? {}),
+          ...Object.values(result.files.comparison ?? {})
+        ]
+      : [
+          ...Object.values(result.files?.comparison ?? {}),
+          ...result.projects.flatMap(({ files }) => [
+            ...Object.values(files.current),
+            ...Object.values(files.previous ?? {}),
+            ...Object.values(files.comparison ?? {})
+          ])
+        ]
 
-  if (diffFiles.length > 0) {
-    await uploadArtifact(artifact, createDiffArtifactName(), diffFiles, inputs)
-  }
-
-  if (result.mode === 'standalone') {
+  if (artifactFiles.length > 0) {
     const id = await uploadArtifact(
       artifact,
-      createReportArtifactName(),
-      Object.values(result.files.report),
+      REPORT_ARTIFACT_NAME,
+      artifactFiles,
       inputs
     )
     core.setOutput('artifact-id', id)
-  } else {
-    for (const project of result.projects) {
-      await uploadArtifact(
-        artifact,
-        createReportArtifactName(project.name),
-        Object.values(project.files.report),
-        inputs
-      )
-      if (project.files.diff) {
-        await uploadArtifact(
-          artifact,
-          createDiffArtifactName(project.name),
-          Object.values(project.files.diff),
-          inputs
-        )
-      }
-    }
   }
 
   if (inputs.annotations) {
