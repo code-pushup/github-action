@@ -6,32 +6,13 @@ import {
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import type { GitBranch } from '@code-pushup/ci'
-import { DEFAULT_PERSIST_FILENAME } from '@code-pushup/models'
-import { projectToFilename } from '@code-pushup/utils'
 import type { RequestError } from '@octokit/request-error'
 import { readdir, rm } from 'node:fs/promises'
-import { join } from 'node:path'
+import path from 'node:path'
 import type { ActionInputs } from './inputs'
 
-const REPORT_ARTIFACT_NAME = 'code-pushup-report'
-const DIFF_ARTIFACT_NAME = 'code-pushup-report-diff'
+export const REPORT_ARTIFACT_NAME = 'code-pushup-report'
 const ARTIFACT_DIR = 'tmp'
-
-export function createReportArtifactName(project?: string): string {
-  return createArtifactName(REPORT_ARTIFACT_NAME, project)
-}
-
-export function createDiffArtifactName(project?: string): string {
-  return createArtifactName(DIFF_ARTIFACT_NAME, project)
-}
-
-function createArtifactName(base: string, project: string | undefined): string {
-  if (!project) {
-    return base
-  }
-  const suffix = projectToFilename(project)
-  return `${base}-${suffix}`
-}
 
 export async function uploadArtifact(
   artifact: ArtifactClient,
@@ -96,7 +77,7 @@ export async function downloadReportArtifact(
     }
 
     const { artifact: reportArtifact } = await artifact.getArtifact(
-      createReportArtifactName(project),
+      REPORT_ARTIFACT_NAME,
       { findBy }
     )
     core.debug(
@@ -111,18 +92,25 @@ export async function downloadReportArtifact(
     if (!downloadPath) {
       throw new Error('Unexpected empty downloadPath')
     }
-    const files = await readdir(downloadPath)
+    const files = await readdir(downloadPath, { recursive: true })
     core.debug(
       `Downloaded artifact to ${downloadPath}, contains files: ${files.join(', ')}`
     )
 
-    const reportJsonFile = `${DEFAULT_PERSIST_FILENAME}.json`
-    if (!files.includes(reportJsonFile)) {
-      core.warning(`Downloaded artifact doesn't contain ${reportJsonFile}`)
+    const expectedFile = path.join(
+      '.code-pushup',
+      '.ci',
+      project ?? '',
+      '.current',
+      'report.json'
+    )
+
+    if (!files.includes(expectedFile)) {
+      core.warning(`Downloaded artifact doesn't contain ${expectedFile}`)
       return null
     }
 
-    return join(downloadPath, reportJsonFile)
+    return path.join(downloadPath, expectedFile)
   } catch (err) {
     if (err instanceof ArtifactNotFoundError) {
       core.info(
