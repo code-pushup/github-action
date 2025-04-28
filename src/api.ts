@@ -1,15 +1,18 @@
 import type { ArtifactClient } from '@actions/artifact'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import type { Comment, ProviderAPIClient } from '@code-pushup/ci'
+import type { Comment, GitBranch, ProviderAPIClient } from '@code-pushup/ci'
 import type { components } from '@octokit/openapi-types'
-import { downloadReportArtifact } from './artifact'
+import path from 'node:path'
+import { downloadReportsArtifact, type DownloadedArtifact } from './artifact'
 import type { GitHubRefs } from './refs'
 
 export class GitHubApiClient implements ProviderAPIClient {
   readonly maxCommentChars = 65_536
 
   private readonly octokit
+
+  private readonly artifactCache = new Map<string, DownloadedArtifact | null>()
 
   constructor(
     private readonly token: string,
@@ -54,13 +57,42 @@ export class GitHubApiClient implements ProviderAPIClient {
       core.debug(`Tried to download artifact without base branch, skipping`)
       return null
     }
-    return downloadReportArtifact(
+    const reports = await this.getReportsArtifact(this.refs.base)
+
+    if (reports == null) {
+      return null
+    }
+
+    const expectedFile = path.join(
+      '.code-pushup',
+      '.ci',
+      project ?? '',
+      '.current',
+      'report.json'
+    )
+
+    if (!reports.files.includes(expectedFile)) {
+      core.warning(`Downloaded artifact doesn't contain ${expectedFile}`)
+      return null
+    }
+
+    return path.join(reports.downloadPath, expectedFile)
+  }
+
+  private async getReportsArtifact(
+    base: GitBranch
+  ): Promise<DownloadedArtifact | null> {
+    if (this.artifactCache.has(base.sha)) {
+      return this.artifactCache.get(base.sha) ?? null
+    }
+    const result = await downloadReportsArtifact(
       this.artifact,
       this.octokit,
-      this.refs.base,
-      this.token,
-      project
+      base,
+      this.token
     )
+    this.artifactCache.set(base.sha, result)
+    return result
   }
 
   private convertComment(
