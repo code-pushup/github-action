@@ -11,8 +11,13 @@ import { readdir, rm } from 'node:fs/promises'
 import path from 'node:path'
 import type { ActionInputs } from './inputs'
 
+export type DownloadedArtifact = {
+  downloadPath: string
+  files: string[]
+}
+
 export const REPORT_ARTIFACT_NAME = 'code-pushup-report'
-const ARTIFACT_DIR = 'tmp'
+const ARTIFACTS_DIR = path.join('.github', 'artifacts')
 
 export async function uploadArtifact(
   artifact: ArtifactClient,
@@ -30,13 +35,12 @@ export async function uploadArtifact(
   return id
 }
 
-export async function downloadReportArtifact(
+export async function downloadReportsArtifact(
   artifact: ArtifactClient,
   octokit: ReturnType<typeof github.getOctokit>,
   branch: GitBranch,
-  token: string,
-  project: string | undefined
-): Promise<string | null> {
+  token: string
+): Promise<DownloadedArtifact | null> {
   const {
     data: { workflow_id }
   } = await octokit.rest.actions.getWorkflowRun({
@@ -84,10 +88,11 @@ export async function downloadReportArtifact(
       `Found ${reportArtifact.name} artifact with ID ${reportArtifact.id} in workflow run ${workflowRun.id}`
     )
 
-    await rm(ARTIFACT_DIR, { recursive: true, force: true })
+    const artifactDir = path.join(ARTIFACTS_DIR, branch.sha)
+    await rm(artifactDir, { recursive: true, force: true })
     const { downloadPath } = await artifact.downloadArtifact(
       reportArtifact.id,
-      { findBy, path: ARTIFACT_DIR }
+      { findBy, path: artifactDir }
     )
     if (!downloadPath) {
       throw new Error('Unexpected empty downloadPath')
@@ -96,21 +101,7 @@ export async function downloadReportArtifact(
     core.debug(
       `Downloaded artifact to ${downloadPath}, contains files: ${files.join(', ')}`
     )
-
-    const expectedFile = path.join(
-      '.code-pushup',
-      '.ci',
-      project ?? '',
-      '.current',
-      'report.json'
-    )
-
-    if (!files.includes(expectedFile)) {
-      core.warning(`Downloaded artifact doesn't contain ${expectedFile}`)
-      return null
-    }
-
-    return path.join(downloadPath, expectedFile)
+    return { downloadPath, files }
   } catch (err) {
     if (err instanceof ArtifactNotFoundError) {
       core.info(
