@@ -12,7 +12,10 @@ export class GitHubApiClient implements ProviderAPIClient {
 
   private readonly octokit
 
-  private readonly artifactCache = new Map<string, DownloadedArtifact | null>()
+  private readonly artifactCache = new Map<
+    string,
+    Promise<DownloadedArtifact | null>
+  >()
 
   constructor(
     private readonly token: string,
@@ -82,17 +85,18 @@ export class GitHubApiClient implements ProviderAPIClient {
   private async getReportsArtifact(
     base: GitBranch
   ): Promise<DownloadedArtifact | null> {
-    if (this.artifactCache.has(base.sha)) {
-      return this.artifactCache.get(base.sha) ?? null
+    const cached = this.artifactCache.get(base.sha)
+    if (cached) {
+      return cached
     }
-    const result = await downloadReportsArtifact(
+    const promise = downloadReportsArtifact(
       this.artifact,
       this.octokit,
       base,
       this.token
     )
-    this.artifactCache.set(base.sha, result)
-    return result
+    this.artifactCache.set(base.sha, promise)
+    return promise
   }
 
   private convertComment(
