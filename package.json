@@ -77,7 +77,7 @@
     ]
   },
   "dependencies": {
-    "@actions/artifact": "^2.3.1",
+    "@actions/artifact": "^2.3.2",
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
     "@actions/github": "^6.0.0",
@@ -87,7 +87,7 @@
     "better-enums": "^0.2.2",
     "fast-glob": "^3.3.3",
     "simple-git": "^3.27.0",
-    "yaml": "^2.7.0"
+    "yaml": "^2.7.1"
   },
   "devDependencies": {
     "@code-pushup/cli": "^0.67.0",
