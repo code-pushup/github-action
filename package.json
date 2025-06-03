@@ -77,17 +77,17 @@
     ]
   },
   "dependencies": {
-    "@actions/artifact": "^2.3.1",
+    "@actions/artifact": "^2.3.2",
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
-    "@actions/github": "^6.0.0",
+    "@actions/github": "^6.0.1",
     "@code-pushup/ci": "^0.68.0",
     "@code-pushup/models": "^0.68.0",
     "@code-pushup/utils": "^0.68.0",
     "better-enums": "^0.2.2",
     "fast-glob": "^3.3.3",
     "simple-git": "^3.27.0",
-    "yaml": "^2.7.0"
+    "yaml": "^2.8.0"
   },
   "devDependencies": {
     "@code-pushup/cli": "^0.68.0",
@@ -96,12 +96,12 @@
     "@code-pushup/js-packages-plugin": "^0.68.0",
     "@code-pushup/portal-client": "^0.13.0",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.13.10",
+    "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "@vercel/ncc": "^0.38.3",
     "cross-env": "^7.0.3",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.5.0",
     "eslint": "^8.57.1",
     "eslint-plugin-github": "^5.1.8",
     "eslint-plugin-jest": "^28.11.0",
@@ -109,12 +109,12 @@
     "eslint-plugin-prettier": "^5.2.3",
     "jest": "^29.7.0",
     "make-coverage-badge": "^1.2.0",
-    "memfs": "^4.17.0",
-    "npm-check-updates": "^17.1.15",
+    "memfs": "^4.17.2",
+    "npm-check-updates": "^18.0.1",
     "prettier": "^3.5.3",
     "prettier-eslint": "^16.3.0",
-    "ts-jest": "^29.2.6",
-    "type-fest": "^4.37.0",
-    "typescript": "^5.8.2"
+    "ts-jest": "^29.3.4",
+    "type-fest": "^4.41.0",
+    "typescript": "^5.8.3"
   }
 }
