@@ -6,6 +6,7 @@ import { simpleGit } from 'simple-git'
 import { createAnnotationsFromIssues } from './annotations'
 import { GitHubApiClient } from './api'
 import { REPORT_ARTIFACT_NAME, uploadArtifact } from './artifact'
+import { authenticate } from './auth'
 import { parseInputs } from './inputs'
 import { createOptions } from './options'
 import { parseGitRefs } from './refs'
@@ -44,7 +45,10 @@ export async function run(
   }
 
   const refs = parseGitRefs()
-  const api = new GitHubApiClient(inputs.token, refs, artifact, getOctokit)
+
+  const token = await authenticate(github.context.repo, inputs.token)
+
+  const api = new GitHubApiClient(token, refs, artifact, getOctokit)
 
   const result = await runInCI(refs, api, options, git)
 
