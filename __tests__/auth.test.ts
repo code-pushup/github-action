@@ -9,6 +9,7 @@ describe('authenticate', () => {
   const mockFetch = jest.spyOn(global, 'fetch')
 
   beforeEach(() => {
+    process.env.GITHUB_TOKEN = 'ghp_default_token'
     mockFetch.mockClear()
   })
 
@@ -21,7 +22,7 @@ describe('authenticate', () => {
 
     const result = await authenticate(
       { owner: 'dunder-mifflin', repo: 'website' },
-      'fallback_token'
+      'ghp_default_token'
     )
 
     expect(result).toBe('ghs_app_123')
@@ -43,10 +44,10 @@ describe('authenticate', () => {
 
     const result = await authenticate(
       { owner: 'dunder-mifflin', repo: 'website' },
-      'fallback_token'
+      'ghp_default_token'
     )
 
-    expect(result).toBe('fallback_token')
+    expect(result).toBe('ghp_default_token')
   })
 
   it('should fall back to standard authentication when service is unavailable', async () => {
@@ -54,9 +55,21 @@ describe('authenticate', () => {
 
     const result = await authenticate(
       { owner: 'dunder-mifflin', repo: 'website' },
-      'fallback_token'
+      'ghp_default_token'
     )
 
-    expect(result).toBe('fallback_token')
+    expect(result).toBe('ghp_default_token')
+  })
+
+  it('should use user-provided PAT when different from GITHUB_TOKEN', async () => {
+    const customPAT = 'ghp_custom_pat'
+
+    const result = await authenticate(
+      { owner: 'owner', repo: 'repo' },
+      customPAT
+    )
+
+    expect(result).toBe(customPAT)
+    expect(mockFetch).not.toHaveBeenCalled()
   })
 })

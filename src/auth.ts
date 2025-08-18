@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import type { Context } from '@actions/github/lib/context'
 
+// TODO: check production URL?
 export const GITHUB_AUTH_SERVICE_URL =
   'https://github-auth.staging.code-pushup.dev'
 
@@ -13,8 +14,12 @@ type TokenResponse = {
 
 export async function authenticate(
   { owner, repo }: Context['repo'],
-  fallbackToken: string
+  token: string
 ): Promise<string> {
+  if (token !== process.env.GITHUB_TOKEN) {
+    core.info('Using user-provided PAT')
+    return token
+  }
   try {
     const response = await fetch(
       `${GITHUB_AUTH_SERVICE_URL}/github/${owner}/${repo}/installation-token`,
@@ -27,7 +32,7 @@ export async function authenticate(
     )
     const data = await response.json()
     if (response.ok && isTokenResponse(data)) {
-      core.info('Using Code PushUp GitHub App authentication')
+      core.info('Using Code PushUp GitHub App installation token')
       return data.token
     }
     handleErrorResponse(response.status)
@@ -36,8 +41,8 @@ export async function authenticate(
       `Unable to contact Code PushUp authentication service: ${error}`
     )
   }
-  core.info('Using standard token authentication')
-  return fallbackToken
+  core.info('Using default GITHUB_TOKEN')
+  return token
 }
 
 function isTokenResponse(res: unknown): res is TokenResponse {
