@@ -103,6 +103,36 @@ Example of using step outputs:
     echo "Artifact ID is ${{ steps.code-pushup.outputs.artifact-id }}"
 ```
 
+## Authentication
+
+The GitHub Action supports multiple authentication methods to integrate with
+your CI workflows.
+
+### GitHub App authentication (recommended)
+
+For the most seamless authentication experience, we recommend installing the
+[Code PushUp GitHub App](https://github.com/apps/code-pushup-staging).
+
+The action automatically detects the GitHub App installation and uses it for
+enhanced API access. This provides better security through short-lived tokens
+and requires zero configuration on your part.
+
+### Default authentication
+
+If the GitHub App is not installed, the action automatically uses the default
+`GITHUB_TOKEN` provided by GitHub Actions, which works perfectly for most use
+cases.
+
+### Custom authentication
+
+You can provide your own token if you have specific requirements:
+
+```yml
+- uses: code-pushup/github-action@v0
+  with:
+    token: ${{ secrets.YOUR_PAT }}
+```
+
 ## Monorepo mode
 
 By default, the GitHub Action assumes your repository is a standalone project.
