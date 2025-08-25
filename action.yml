@@ -80,6 +80,20 @@ inputs:
     description: Skip PR comment
     required: true
     default: false
+  configPatterns:
+    description: Performance optimization for large monorepos - `persist` and
+      `upload` configs provided upfront to skip parsing.
+
+      Replaces `{projectName}` in configured values with name of each project.
+    required: false
+  searchCommits:
+    description: |
+      If enabled and portal cache is used, looks for previous report in target branch's 10
+      most recent commits (not only latest).
+
+      Supports boolean or an integer (1-100), the latter overrides the default number of commits (10).
+    required: true
+    default: false
 
 outputs:
   artifact-id:

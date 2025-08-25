@@ -25,6 +25,8 @@ export function createOptions(inputs: ActionInputs): Required<Options> {
     detectNewIssues: inputs.annotations,
     skipComment: inputs.skipComment,
     silent: inputs.silent,
+    configPatterns: inputs.configPatterns,
+    searchCommits: inputs.searchCommits,
     debug: isDebugActive(),
     logger: {
       error: core.error,

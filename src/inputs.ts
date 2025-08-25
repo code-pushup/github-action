@@ -1,9 +1,12 @@
 import * as core from '@actions/core'
 import {
-  MONOREPO_TOOLS,
   isMonorepoTool,
+  MONOREPO_TOOLS,
+  parseConfigPatternsFromString,
+  type ConfigPatterns,
   type MonorepoTool
 } from '@code-pushup/ci'
+import { coerceBooleanValue } from '@code-pushup/utils'
 
 export type ActionInputs = {
   monorepo: boolean | MonorepoTool
@@ -20,11 +23,13 @@ export type ActionInputs = {
   retention: number | null
   annotations: boolean
   skipComment: boolean
+  configPatterns: ConfigPatterns | null
+  searchCommits: boolean | number
 }
 
 export function parseInputs(): ActionInputs {
   const monorepo = parseMonorepoInput(core.getInput('monorepo'))
-  const parallel = parseParallelInput(core.getInput('parallel'))
+  const parallel = getBoolOrCountInput('parallel')
   const projects = parseProjectsInput(core.getInput('projects'))
   const task = core.getInput('task')
   const nxProjectsFilter = core.getInput('nxProjectsFilter')
@@ -37,6 +42,10 @@ export function parseInputs(): ActionInputs {
   const retention = parseInteger(core.getInput('retention'))
   const annotations = core.getBooleanInput('annotations')
   const skipComment = core.getBooleanInput('skipComment')
+  const configPatterns = parseConfigPatternsFromString(
+    core.getInput('configPatterns')
+  )
+  const searchCommits = getBoolOrCountInput('searchCommits')
 
   return {
     monorepo,
@@ -52,7 +61,9 @@ export function parseInputs(): ActionInputs {
     artifacts,
     retention,
     annotations,
-    skipComment
+    skipComment,
+    configPatterns,
+    searchCommits
   }
 }
 
@@ -64,21 +75,36 @@ function parseInteger(value: string): number | null {
   return int
 }
 
-function parseBoolean(value: string): boolean | null {
-  if (['false', 'False', 'FALSE'].includes(value)) {
+function getBoolOrCountInput(name: keyof ActionInputs): boolean | number {
+  const value = parseBoolOrCountInput(core.getInput(name))
+  if (value == null) {
+    throw new Error(
+      `Invalid value for ${name} input, expected boolean or positive integer`
+    )
+  }
+  return value
+}
+
+function parseBoolOrCountInput(value: string): boolean | number | null {
+  if (!value) {
     return false
   }
-  if (['true', 'True', 'TRUE'].includes(value)) {
-    return true
+  const bool = coerceBooleanValue(value)
+  if (bool != null) {
+    return bool
   }
-  return null
+  const int = parseInteger(value)
+  if (int == null || int < 1) {
+    return null
+  }
+  return int
 }
 
 function parseMonorepoInput(value: string): boolean | MonorepoTool {
   if (!value) {
     return false
   }
-  const bool = parseBoolean(value)
+  const bool = coerceBooleanValue(value)
   if (bool != null) {
     return bool
   }
@@ -96,21 +122,4 @@ function parseProjectsInput(value: string): string[] | null {
     return null
   }
   return value.split(',').map(item => item.trim())
-}
-
-function parseParallelInput(value: string): boolean | number {
-  if (!value) {
-    return false
-  }
-  const bool = parseBoolean(value)
-  if (bool != null) {
-    return bool
-  }
-  const int = parseInteger(value)
-  if (int == null || int < 1) {
-    throw new Error(
-      'Invalid value for parallel input, expected boolean or positive integer'
-    )
-  }
-  return int
 }
