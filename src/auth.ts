@@ -1,15 +1,26 @@
 import * as core from '@actions/core'
 import type { Context } from '@actions/github/lib/context'
 
-// TODO: check production URL?
-export const GITHUB_AUTH_SERVICE_URL =
-  'https://github-auth.staging.code-pushup.dev'
-
-export const GITHUB_AUTH_API_KEY =
-  '18850f2513adad10662e85f4f085a9714e64cef7793fc2ffe903b5ddcd62de42'
-
 type TokenResponse = {
   token: string
+}
+
+type AuthService = {
+  url: string
+  key: string
+  name: string
+}
+
+export const STAGING_SERVICE: AuthService = {
+  url: 'https://github-auth.staging.code-pushup.dev',
+  key: '18850f2513adad10662e85f4f085a9714e64cef7793fc2ffe903b5ddcd62de42',
+  name: 'Code PushUp (staging)'
+}
+
+export const PRODUCTION_SERVICE: AuthService = {
+  url: 'https://github-auth.code-pushup.dev',
+  key: 'b2585352366ceead1323a1f3a7cf6b9212387ea6d2d8aeb397e7950aaa3ba776',
+  name: 'Code PushUp'
 }
 
 export async function authenticate(
@@ -20,29 +31,47 @@ export async function authenticate(
     core.info('Using user-provided PAT')
     return token
   }
+  const productionResult = await tryService(PRODUCTION_SERVICE, owner, repo)
+  if (productionResult) {
+    core.info(`Using ${PRODUCTION_SERVICE.name} GitHub App installation token`)
+    return productionResult.token
+  }
+  const stagingResult = await tryService(STAGING_SERVICE, owner, repo)
+  if (stagingResult) {
+    core.info(`Using ${STAGING_SERVICE.name} GitHub App installation token`)
+    return stagingResult.token
+  }
+  core.info('Using default GITHUB_TOKEN')
+  return token
+}
+
+async function tryService(
+  service: AuthService,
+  owner: string,
+  repo: string
+): Promise<{ token: string; service: AuthService } | null> {
   try {
     const response = await fetch(
-      `${GITHUB_AUTH_SERVICE_URL}/github/${owner}/${repo}/installation-token`,
+      `${service.url}/github/${owner}/${repo}/installation-token`,
       {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${GITHUB_AUTH_API_KEY}`
+          Authorization: `Bearer ${service.key}`
         }
       }
     )
     const data = await response.json()
     if (response.ok && isTokenResponse(data)) {
-      core.info('Using Code PushUp GitHub App installation token')
-      return data.token
+      return { token: data.token, service }
     }
-    handleErrorResponse(response.status)
+    handleErrorResponse(response.status, service.name)
   } catch (error) {
-    core.warning(
-      `Unable to contact Code PushUp authentication service: ${error}`
+    core.debug(
+      `Unable to contact ${service.name} authentication service: ${error}`
     )
+    return null
   }
-  core.info('Using default GITHUB_TOKEN')
-  return token
+  return null
 }
 
 function isTokenResponse(res: unknown): res is TokenResponse {
@@ -54,18 +83,22 @@ function isTokenResponse(res: unknown): res is TokenResponse {
   )
 }
 
-function handleErrorResponse(status: number): void {
+function handleErrorResponse(status: number, serviceName: string): void {
   switch (status) {
     case 404:
-      core.debug('Code PushUp GitHub App not installed on this repository')
+      core.debug(`${serviceName} GitHub App not installed on this repository`)
       break
     case 401:
-      core.warning('Code PushUp authentication service authorization failed')
+      core.warning(`${serviceName} authentication service authorization failed`)
       break
     case 500:
-      core.warning('Code PushUp authentication service temporarily unavailable')
+      core.warning(
+        `${serviceName} authentication service temporarily unavailable`
+      )
       break
     default:
-      core.debug(`Code PushUp authentication service returned status ${status}`)
+      core.warning(
+        `${serviceName} authentication service returned unexpected status: ${status}`
+      )
   }
 }
