@@ -25,6 +25,7 @@ export type ActionInputs = {
   skipComment: boolean
   configPatterns: ConfigPatterns | null
   searchCommits: boolean | number
+  jobId: string | null
 }
 
 export function parseInputs(): ActionInputs {
@@ -46,6 +47,7 @@ export function parseInputs(): ActionInputs {
     core.getInput('configPatterns')
   )
   const searchCommits = getBoolOrCountInput('searchCommits')
+  const jobId = core.getInput('jobId') || null
 
   return {
     monorepo,
@@ -63,7 +65,8 @@ export function parseInputs(): ActionInputs {
     annotations,
     skipComment,
     configPatterns,
-    searchCommits
+    searchCommits,
+    jobId
   }
 }
 

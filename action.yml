@@ -94,6 +94,10 @@ inputs:
       Supports boolean or an integer (1-100), the latter overrides the default number of commits (10).
     required: true
     default: false
+  jobId:
+    description:
+      Differentiate PR comments (useful if multiple jobs run Code PushUp)
+    required: false
 
 outputs:
   artifact-id:
