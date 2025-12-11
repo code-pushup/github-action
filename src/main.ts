@@ -2,11 +2,13 @@ import { DefaultArtifactClient } from '@actions/artifact'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { runInCI } from '@code-pushup/ci'
+import { logger } from '@code-pushup/utils'
 import { simpleGit } from 'simple-git'
 import { createAnnotationsFromIssues } from './annotations'
 import { GitHubApiClient } from './api'
 import { REPORT_ARTIFACT_NAME, uploadArtifact } from './artifact'
 import { authenticate } from './auth'
+import { isDebugActive } from './debug'
 import { parseInputs } from './inputs'
 import { createOptions } from './options'
 import { parseGitRefs } from './refs'
@@ -21,11 +23,8 @@ export async function run(
   const inputs = parseInputs()
   const options = createOptions(inputs)
 
-  if (options.debug) {
-    core.info(
-      `${LOG_PREFIX} Debug in actions in enabled, setting CP_VERBOSE env variable to true`
-    )
-    process.env['CP_VERBOSE'] = 'true'
+  if (isDebugActive()) {
+    logger.setVerbose(true)
   }
 
   const [nodeMajorString] = (
@@ -38,8 +37,8 @@ export async function run(
     core.warning(
       `${LOG_PREFIX} Internal runner is using unsupported NodeJS version ${process.version}`
     )
-  } else if (options.debug) {
-    core.info(
+  } else {
+    core.debug(
       `${LOG_PREFIX} Internal runner is using NodeJS version ${process.version}`
     )
   }
