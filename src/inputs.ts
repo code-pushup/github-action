@@ -1,12 +1,14 @@
 import * as core from '@actions/core'
 import {
-  isMonorepoTool,
-  MONOREPO_TOOLS,
   parseConfigPatternsFromString,
-  type ConfigPatterns,
-  type MonorepoTool
+  type ConfigPatterns
 } from '@code-pushup/ci'
-import { coerceBooleanValue } from '@code-pushup/utils'
+import {
+  MONOREPO_TOOLS,
+  coerceBooleanValue,
+  isMonorepoTool,
+  type MonorepoTool
+} from '@code-pushup/utils'
 
 export type ActionInputs = {
   monorepo: boolean | MonorepoTool
